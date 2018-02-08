@@ -72,7 +72,7 @@ def gcd(a, b):
 
 
 def lcm(a, b):
-    return int(a * b / gcd(a, b))
+    return a * b // gcd(a, b)
 
 
 def totient(p, q):
@@ -80,22 +80,25 @@ def totient(p, q):
 
 
 def rsa(m: int):
-    p = 61
-    q = 53
+    p = gen_prime(200)
+    q = gen_prime(200)
 
     n = p * q
     t = totient(p, q)
 
-    e = 17  # TODO e should be random
+    t_bits = int(math.floor(math.log2(t)))
+    print("t_bits", t_bits)
 
-    # TODO: check e is prime
-    # TODO: check e is coprime to t
+    e = gen_prime(t_bits - 10)
+    # TODO: we should loop until this is true
+    assert gcd(t, e) == 1
 
     d = fast_multiplicative_inverse(e, t)
 
     assert d * e % t == 1
 
     print('t', t)
+    print('e', e)
     print('d', d)
 
     encrypted = modexp(m, n, e)
