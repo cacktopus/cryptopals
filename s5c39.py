@@ -6,6 +6,8 @@
 import math
 import subprocess as sp
 
+from util import modexp
+
 
 def gen_prime(bits: int) -> int:
     cmd = "openssl prime -generate -bits {}".format(bits)
@@ -77,9 +79,7 @@ def totient(p, q):
     return lcm(p - 1, q - 1)
 
 
-def rsa():
-    m = 65
-
+def rsa(m: int):
     p = 61
     q = 53
 
@@ -93,18 +93,20 @@ def rsa():
 
     d = fast_multiplicative_inverse(e, t)
 
-    print(t)
-    print(d)
+    assert d * e % t == 1
 
-    encrypted = m ** e % n  # TODO: use modular exponentiation algo
-    print(encrypted)
+    print('t', t)
+    print('d', d)
 
-    decrypted = encrypted ** d % n  # TODO: use modular exponentiation algo
-    print(decrypted)
+    encrypted = modexp(m, n, e)
+    print('enc', encrypted)
+
+    decrypted = modexp(encrypted, n, d)
+    print('dec', decrypted)
 
 
 def main():
-    rsa()
+    rsa(65)
 
 
 if __name__ == '__main__':
