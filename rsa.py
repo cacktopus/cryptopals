@@ -4,7 +4,7 @@ import os
 from Crypto.PublicKey import RSA
 
 
-def main():
+def testkey():
     path = expanduser("~/.ssh")
     testkey = os.path.join(path, "testkey")
 
@@ -14,5 +14,11 @@ def main():
     print(hex(key.n))
 
 
+def pub():
+    key = RSA.importKey(open("mykey.pub").read())
+    print(key.n)
+    print(key.e)
+
+
 if __name__ == '__main__':
-    main()
+    pub()

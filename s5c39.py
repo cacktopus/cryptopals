@@ -1,4 +1,6 @@
 # further research:
+# - proof of RSA's correctness (Wikipedia)
+# - RSA signing (challenge 42)
 # - gcd/lcm
 # - coprime check
 # - modular multiplicative inverse
