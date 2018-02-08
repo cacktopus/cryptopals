@@ -6,6 +6,8 @@
 import math
 import subprocess as sp
 
+from Crypto.PublicKey import RSA
+
 from util import modexp
 
 
@@ -106,6 +108,11 @@ def rsa(m: int):
 
     decrypted = modexp(encrypted, n, d)
     print('dec', decrypted)
+
+    key = RSA.construct((n, e, d))
+    export_key = key.exportKey()
+    with open("mykey", "wb") as f:
+        f.write(export_key)
 
 
 def main():
