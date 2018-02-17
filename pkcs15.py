@@ -38,7 +38,7 @@ def i2osp(n, x_len: int):
 
 
 def rsasp1(n, d, m):
-    return modexp(n, d, m)
+    return modexp(m, n, d)
 
 
 def main():
@@ -67,7 +67,6 @@ def main():
         # print(n3)
 
         s = rsasp1(key.n, key.d, n)
-
         s_ = i2osp(s, em_len)
 
         sys.stdout.buffer.write(s_)
@@ -79,7 +78,7 @@ def main():
         d = i2osp(m, em_len)
         sys.stdout.buffer.write(d)
 
-    verify()
+    sign()
 
 
 if __name__ == '__main__':
