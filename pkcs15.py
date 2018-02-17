@@ -53,23 +53,33 @@ def main():
 
     em_len = len(n)
 
-    data = open("decode_single_char_xor.py", "rb").read()
-    em = emsa_pcks1_v1_5_encode(data, em_len)
+    def sign():
+        data = open("decode_single_char_xor.py", "rb").read()
+        em = emsa_pcks1_v1_5_encode(data, em_len)
 
-    n = os2ip(em)
-    # print(n)
+        n = os2ip(em)
+        # print(n)
 
-    # n2 = i2osp(n, em_len)
-    # print(n2)
-    #
-    # n3 = os2ip(n2)
-    # print(n3)
+        # n2 = i2osp(n, em_len)
+        # print(n2)
+        #
+        # n3 = os2ip(n2)
+        # print(n3)
 
-    s = rsasp1(key.n, key.d, n)
+        s = rsasp1(key.n, key.d, n)
 
-    s_ = i2osp(s, em_len)
+        s_ = i2osp(s, em_len)
 
-    sys.stdout.buffer.write(s_)
+        sys.stdout.buffer.write(s_)
+
+    def verify():
+        data = open("sig", "rb").read()
+        s = os2ip(data)
+        m = modexp(s, key.n, key.e)
+        d = i2osp(m, em_len)
+        sys.stdout.buffer.write(d)
+
+    verify()
 
 
 if __name__ == '__main__':
