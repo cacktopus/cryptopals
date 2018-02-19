@@ -43,6 +43,23 @@ def rsasp1(n, d, m):
     return modexp(m, n, d)
 
 
+def sign(key, em_len: int) -> bytes:
+    data = open("decode_single_char_xor.py", "rb").read()
+    em = emsa_pcks1_v1_5_encode(data, em_len)
+    n = os2ip(em)
+    s = rsasp1(key.n, key.d, n)
+    o = i2osp(s, em_len)
+    return o
+
+
+def verify(key, em_len: int) -> bytes:
+    data = open("sig", "rb").read()
+    s = os2ip(data)
+    m = modexp(s, key.n, key.e)
+    d = i2osp(m, em_len)
+    return d
+
+
 def main():
     path = os.path.expanduser("~/.ssh")
     testkey = os.path.join(path, "testkey")
@@ -51,37 +68,21 @@ def main():
 
     h = hex(key.n)
     n = binascii.unhexlify(h.lstrip("0x"))  # TODO: should be better way to do this
-
     em_len = len(n)
-
-    def sign():
-        data = open("decode_single_char_xor.py", "rb").read()
-        em = emsa_pcks1_v1_5_encode(data, em_len)
-
-        n = os2ip(em)
-
-        s = rsasp1(key.n, key.d, n)
-        s_ = i2osp(s, em_len)
-
-        sys.stdout.buffer.write(s_)
-
-    def verify():
-        data = open("sig", "rb").read()
-        s = os2ip(data)
-        m = modexp(s, key.n, key.e)
-        d = i2osp(m, em_len)
-        sys.stdout.buffer.write(d)
 
     cmd = sys.argv[0]
     cmd = os.path.basename(cmd)
 
     if cmd == "sign":
-        return sign()
+        o = sign(key, em_len)
 
-    if cmd == "verify":
-        return verify()
+    elif cmd == "verify":
+        o = verify(key, em_len)
 
-    raise RuntimeError("Unknown command")
+    else:
+        raise RuntimeError("Unknown command")
+
+    sys.stdout.buffer.write(o)
 
 
 if __name__ == '__main__':
