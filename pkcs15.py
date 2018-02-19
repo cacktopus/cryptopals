@@ -60,6 +60,10 @@ def verify(key, em_len: int) -> bytes:
     return d
 
 
+def unknown_command(*args):
+    raise RuntimeError("Unknown command")
+
+
 def main():
     path = os.path.expanduser("~/.ssh")
     testkey = os.path.join(path, "testkey")
@@ -73,15 +77,8 @@ def main():
     cmd = sys.argv[0]
     cmd = os.path.basename(cmd)
 
-    if cmd == "sign":
-        o = sign(key, em_len)
-
-    elif cmd == "verify":
-        o = verify(key, em_len)
-
-    else:
-        raise RuntimeError("Unknown command")
-
+    fn = dict(sign=sign, verify=verify).get(cmd, unknown_command)
+    o = fn(key, em_len)
     sys.stdout.buffer.write(o)
 
 
