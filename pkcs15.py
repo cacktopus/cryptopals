@@ -9,15 +9,13 @@ from Crypto.PublicKey import RSA
 
 from util import modexp
 
+SHA256_HEADER = binascii.unhexlify("3031300d060960864801650304020105000420")
+
 
 def emsa_pcks1_v1_5_encode(m, em_len, hashfunc=sha256):
-    a = "30 31 30 0d 06 09 60 86 48 01 65 03 04 02 01 05 00 04 20".replace(" ", "")
-    b = binascii.unhexlify(a)
-
     digest = sha256(m).digest()
-    # output = binascii.hexlify(digest)
 
-    t = b + digest
+    t = SHA256_HEADER + digest
 
     ps_len = em_len - len(t) - 3
     ps = b'\xff' * ps_len
@@ -53,11 +51,60 @@ def sign(key, em_len: int) -> bytes:
     return o
 
 
-def verify(key, em_len: int) -> bytes:
-    data = open("sig", "rb").read()
+def decode(key, em_len: int) -> bytes:
+    fn = sys.argv.pop(0)
+    data = open(fn, "rb").read()
     s = os2ip(data)
     m = modexp(s, key.n, key.e)
     d = i2osp(m, em_len)
+    return d
+
+
+def decode_pkcs_padding_unsafe(d):
+    c, d = d[0], d[1:]
+    assert c == 0x00
+
+    c, d = d[0], d[1:]
+    assert c == 0x01
+
+    while True:
+        c, d = d[0], d[1:]
+        if c == 0xff:
+            continue
+
+        elif c == 0x00:
+            break
+
+        else:
+            assert 0, "Invalid padding"
+
+    return d
+
+
+def check_sha256_header(d):
+    ln = len(SHA256_HEADER)
+    c, d = d[:ln], d[ln:]
+
+    if len(c) != ln:
+        assert 0, "Invalid header"
+
+    for i in range(ln):
+        if SHA256_HEADER[i] != c[i]:
+            assert 0, "Invalid header"
+
+    return d
+
+
+def verify_unsafe(key, em_len):
+    fn = sys.argv.pop(0)
+    data = open(fn, "rb").read()
+    s = os2ip(data)
+    m = modexp(s, key.n, key.e)
+    d = i2osp(m, em_len)
+
+    d = decode_pkcs_padding_unsafe(d)
+    d = check_sha256_header(d)
+
     return d
 
 
@@ -78,7 +125,12 @@ def main():
     cmd = sys.argv.pop(0)
     cmd = os.path.basename(cmd)
 
-    fn = dict(sign=sign, verify=verify).get(cmd, unknown_command)
+    fn = {
+        "sign": sign,
+        "verify-unsafe": verify_unsafe,
+        "decode": decode,
+    }.get(cmd, unknown_command)
+
     o = fn(key, em_len)
     sys.stdout.buffer.write(o)
 
