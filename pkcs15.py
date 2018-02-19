@@ -120,10 +120,8 @@ def unknown_command(*args):
 
 
 def main():
-    path = os.path.expanduser("~/.ssh")
-    testkey = os.path.join(path, "testkey")
-
-    key = RSA.importKey(open(testkey).read())
+    priv_key = os.environ['RSA_KEY']
+    key = RSA.importKey(open(priv_key).read())
 
     h = hex(key.n)
     n = binascii.unhexlify(h.lstrip("0x"))  # TODO: should be better way to do this

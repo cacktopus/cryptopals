@@ -84,8 +84,8 @@ def totient(p, q):
 
 
 def rsa(m: int):
-    p = gen_prime(200)
-    q = gen_prime(200)
+    p = gen_prime(1024)
+    q = gen_prime(1024)
 
     n = p * q
     t = totient(p, q)
@@ -93,7 +93,7 @@ def rsa(m: int):
     t_bits = int(math.floor(math.log2(t)))
     print("t_bits", t_bits)
 
-    e = gen_prime(t_bits - 10)
+    e = 3
     # TODO: we should loop until this is true
     assert gcd(t, e) == 1
 
