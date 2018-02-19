@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import binascii
 import os
 import sys
@@ -46,10 +48,9 @@ def main():
     testkey = os.path.join(path, "testkey")
 
     key = RSA.importKey(open(testkey).read())
-    # print(key)
 
-    s = hex(key.n)
-    n = binascii.unhexlify(s.lstrip("0x"))  # TODO: should be better way to do this
+    h = hex(key.n)
+    n = binascii.unhexlify(h.lstrip("0x"))  # TODO: should be better way to do this
 
     em_len = len(n)
 
@@ -58,13 +59,6 @@ def main():
         em = emsa_pcks1_v1_5_encode(data, em_len)
 
         n = os2ip(em)
-        # print(n)
-
-        # n2 = i2osp(n, em_len)
-        # print(n2)
-        #
-        # n3 = os2ip(n2)
-        # print(n3)
 
         s = rsasp1(key.n, key.d, n)
         s_ = i2osp(s, em_len)
@@ -78,7 +72,16 @@ def main():
         d = i2osp(m, em_len)
         sys.stdout.buffer.write(d)
 
-    sign()
+    cmd = sys.argv[0]
+    cmd = os.path.basename(cmd)
+
+    if cmd == "sign":
+        return sign()
+
+    if cmd == "verify":
+        return verify()
+
+    raise RuntimeError("Unknown command")
 
 
 if __name__ == '__main__':
