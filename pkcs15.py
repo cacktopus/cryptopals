@@ -92,12 +92,12 @@ def check_sha256_header(d):
         if SHA256_HEADER[i] != c[i]:
             assert 0, "Invalid header"
 
-    return d
+    return d[:32]
 
 
 def verify_unsafe(key, em_len):
-    fn = sys.argv.pop(0)
-    data = open(fn, "rb").read()
+    sig_fn = sys.argv.pop(0)
+    data = open(sig_fn, "rb").read()
     s = os2ip(data)
     m = modexp(s, key.n, key.e)
     d = i2osp(m, em_len)
@@ -105,7 +105,14 @@ def verify_unsafe(key, em_len):
     d = decode_pkcs_padding_unsafe(d)
     d = check_sha256_header(d)
 
-    return d
+    data_fn = sys.argv.pop(0)
+    data = open(data_fn, "rb").read()
+    sig1 = sha256(data).hexdigest()
+    sig2 = binascii.hexlify(d).decode()
+
+    assert sig1 == sig2, "Signature mismatch: " + str(sig1) + " != " + str(sig2)
+
+    return b'Verified OK\n'
 
 
 def unknown_command(*args):
