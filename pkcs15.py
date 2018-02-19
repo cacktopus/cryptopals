@@ -44,7 +44,8 @@ def rsasp1(n, d, m):
 
 
 def sign(key, em_len: int) -> bytes:
-    data = open("decode_single_char_xor.py", "rb").read()
+    fn = sys.argv.pop(0)
+    data = open(fn, "rb").read()
     em = emsa_pcks1_v1_5_encode(data, em_len)
     n = os2ip(em)
     s = rsasp1(key.n, key.d, n)
@@ -74,7 +75,7 @@ def main():
     n = binascii.unhexlify(h.lstrip("0x"))  # TODO: should be better way to do this
     em_len = len(n)
 
-    cmd = sys.argv[0]
+    cmd = sys.argv.pop(0)
     cmd = os.path.basename(cmd)
 
     fn = dict(sign=sign, verify=verify).get(cmd, unknown_command)
