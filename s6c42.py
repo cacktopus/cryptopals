@@ -25,41 +25,38 @@ def icbrt(n: int, lo: int = 1, hi: int = None):
     """integer cube root"""
     hi = hi or n
 
-    if hi - lo == 1:
-        return lo  # TODO: try perfect cubes
+    while hi - lo != 1:
+        trial = lo + (hi - lo) // 2
+        r = trial ** 3
 
-    trial = lo + (hi - lo) // 2
-    r = trial ** 3
+        if r > n:
+            hi = trial
 
-    print(lo, hi, trial, r)
+        else:
+            lo = trial
 
-    if r > n:
-        return icbrt(n, lo, trial)
-
-    else:
-        return icbrt(n, trial, hi)
+    return lo
 
 
 def main():
-    print(icbrt((999999999999999111321312310287398127**2+1298310923)**3))
+    # print(icbrt(16000))
+    # print(icbrt((999999999999999111321312310287398127**3**3+1298310923)**3))
 
-    # priv_key = os.environ.get('RSA_KEY', 'mykey')
-    # key = RSA.importKey(open(priv_key).read())
-    #
-    # res = modexp(2, key.n, key.e)
-    # # print(key.size())
-    #
-    # msg = 0x1ffffff00000ff00
-    # # print(msg)
-    #
-    # i = next_perfect_cube(msg)
-    # nxt = (i - 1) ** 3
-    # # print(nxt)
-    #
-    # em = i2osp(msg, 16)
-    # # sys.stdout.buffer.write(em)
-    #
-    # sys.stdout.buffer.write(i2osp(nxt, 16))
+    priv_key = os.environ.get('RSA_KEY', 'mykey')
+    key = RSA.importKey(open(priv_key).read())
+
+    res = modexp(2, key.n, key.e)
+    # print(key.size())
+
+    msg = key.n << 8
+    nxt = icbrt(msg)
+    # print(nxt)
+
+    res = modexp(nxt, key.n, key.e)
+
+    sys.stdout.buffer.write(i2osp(msg, 32))
+    sys.stdout.buffer.write(i2osp(res, 32))
+    sys.stdout.buffer.write(i2osp(nxt, 32))
 
 
 if __name__ == '__main__':
