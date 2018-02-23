@@ -1,12 +1,10 @@
-import os
-
 import binascii
-
-import sys
-
 import itertools
-
 import math
+import os
+import sys
+from hashlib import sha256
+
 from Crypto.PublicKey import RSA
 
 from pkcs15 import i2osp, SHA256_HEADER, os2ip
@@ -49,19 +47,38 @@ def main():
     priv_key = os.environ.get('RSA_KEY', 'mykey')
     key = RSA.importKey(open(priv_key).read())
 
-    key_sz = round_up_power_2(key.size())
+    key_byte_len = round_up_power_2(key.size()) // 8
 
-    print(key_sz)
+    print(key_byte_len)
 
-    msg = b'\x00' + b'\x01' + b'\xff' * (16 - 3) + b'\x00' + SHA256_HEADER + b'\x00' * 128
-    n = os2ip(msg)
+    content = b'hi mom'
+    digest = sha256(content).digest()
+
+    ff_len = 6
+
+    msg = b'\x00' + b'\x01' + b'\xff' * ff_len + b'\x00' + SHA256_HEADER + digest
+
+    pad_len = key_byte_len - len(msg)
+    padded = (msg + b'\x00' * pad_len)
+
+    n = os2ip(padded)
     nxt = icbrt(n) + 1
 
-    res = modexp(nxt, key.n, key.e)
+    print(n, end="\n\n")
 
-    sys.stdout.buffer.write(i2osp(n, 64*8))
-    sys.stdout.buffer.write(i2osp(res, 64*8))
-    sys.stdout.buffer.write(i2osp(nxt, 64*8))
+    res = modexp(nxt, key.n, key.e)
+    # res = nxt ** 3
+
+    assert res < key.n
+
+    print(res, end="\n\n")
+
+    print(nxt, end="\n\n")
+
+    forgery = i2osp(res)
+
+    print(binascii.hexlify(i2osp(n)), end="\n\n")
+    print(binascii.hexlify(forgery), end="\n\n")
 
 
 if __name__ == '__main__':

@@ -29,11 +29,15 @@ def os2ip(bin):
     return int(binascii.hexlify(bin), 16)
 
 
-def i2osp(n, x_len: int):
+def i2osp(n, x_len: int = 0):
     n_ = hex(n)[2:]
-    pad_len = 2 * x_len - len(n_)
-    assert pad_len >= 0
-    padding = "0" * pad_len
+
+    if x_len:
+        pad_len = 2 * x_len - len(n_)
+        assert pad_len >= 0
+        padding = "0" * pad_len
+    else:
+        padding = "0" if len(n_) % 2 == 1 else ""
 
     return binascii.unhexlify(padding + n_)
 
