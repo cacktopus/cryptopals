@@ -5,9 +5,11 @@ import binascii
 import sys
 
 import itertools
+
+import math
 from Crypto.PublicKey import RSA
 
-from pkcs15 import i2osp
+from pkcs15 import i2osp, SHA256_HEADER, os2ip
 from util import modexp
 
 
@@ -38,25 +40,28 @@ def icbrt(n: int, lo: int = 1, hi: int = None):
     return lo
 
 
-def main():
-    # print(icbrt(16000))
-    # print(icbrt((999999999999999111321312310287398127**3**3+1298310923)**3))
+def round_up_power_2(n):
+    m = int(math.floor(math.log2(n))) + 1
+    return 2 ** m
 
+
+def main():
     priv_key = os.environ.get('RSA_KEY', 'mykey')
     key = RSA.importKey(open(priv_key).read())
 
-    res = modexp(2, key.n, key.e)
-    # print(key.size())
+    key_sz = round_up_power_2(key.size())
 
-    msg = key.n << 8
-    nxt = icbrt(msg)
-    # print(nxt)
+    print(key_sz)
+
+    msg = b'\x00' + b'\x01' + b'\xff' * (16 - 3) + b'\x00' + SHA256_HEADER + b'\x00' * 128
+    n = os2ip(msg)
+    nxt = icbrt(n) + 1
 
     res = modexp(nxt, key.n, key.e)
 
-    sys.stdout.buffer.write(i2osp(msg, 32))
-    sys.stdout.buffer.write(i2osp(res, 32))
-    sys.stdout.buffer.write(i2osp(nxt, 32))
+    sys.stdout.buffer.write(i2osp(n, 64*8))
+    sys.stdout.buffer.write(i2osp(res, 64*8))
+    sys.stdout.buffer.write(i2osp(nxt, 64*8))
 
 
 if __name__ == '__main__':

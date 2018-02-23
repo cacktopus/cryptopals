@@ -32,6 +32,7 @@ def os2ip(bin):
 def i2osp(n, x_len: int):
     n_ = hex(n)[2:]
     pad_len = 2 * x_len - len(n_)
+    assert pad_len >= 0
     padding = "0" * pad_len
 
     return binascii.unhexlify(padding + n_)
