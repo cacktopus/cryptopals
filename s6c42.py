@@ -43,8 +43,10 @@ def round_up_power_2(n):
 
 
 def main():
-    priv_key = os.environ.get('RSA_KEY', 'mykey')
-    key = RSA.importKey(open(priv_key).read())
+    priv_key = os.environ.get('RSA_KEY', 'test/fixtures/e3_test_key')
+
+    with open(priv_key) as f:
+        key = RSA.importKey(f.read())
 
     key_byte_len = round_up_power_2(key.size()) // 8
 
