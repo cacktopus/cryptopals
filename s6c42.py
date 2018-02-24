@@ -2,7 +2,6 @@ import binascii
 import itertools
 import math
 import os
-import sys
 from hashlib import sha256
 
 from Crypto.PublicKey import RSA

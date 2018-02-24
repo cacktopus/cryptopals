@@ -3,6 +3,7 @@ import unittest
 
 import s1c1 as c1
 import s1c2 as c2
+import s6c42 as c42
 
 
 class TestSolutions(unittest.TestCase):
@@ -21,6 +22,9 @@ class TestSolutions(unittest.TestCase):
         r = c2.xor2(i0, i1)
 
         assert codecs.encode(r, "hex") == c2.expected
+
+    def test_s6c42(self):
+        c42.main()
 
 
 if __name__ == '__main__':
