@@ -6,3 +6,10 @@ script: python solutions_test.py
 branches:
   only:
     - master
+
+notifications:
+  email:
+    recipients:
+      - "suurkivi+travisci@gmail.com"
+    on_success: always
+    on_failure: always
