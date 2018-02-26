@@ -51,17 +51,17 @@ def forge_signature(key, content: bytes, ff_len: int = 6):
     padded = (msg + b'\x00' * pad_len)
 
     n = os2ip(padded)
-    nxt = icbrt(n) + 1
+    signature = icbrt(n) + 1
 
     debug(n, end="\n\n")
 
-    res = modexp(nxt, key.n, key.e)
+    res = modexp(signature, key.n, key.e)
     # res = nxt ** 3
 
     assert res < key.n
 
     debug(res, end="\n\n")
-    debug(nxt, end="\n\n")
+    debug(signature, end="\n\n")
 
     forgery = binascii.hexlify(i2osp(res, key_byte_len))
 
@@ -72,4 +72,4 @@ def forge_signature(key, content: bytes, ff_len: int = 6):
     msg_len_hex = len(msg) * 2
     assert desired[:msg_len_hex] == forgery[:msg_len_hex]
 
-    return forgery
+    return i2osp(signature, key_byte_len)

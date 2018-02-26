@@ -38,12 +38,21 @@ class TestSolutions(unittest.TestCase):
         assert codecs.encode(r, "hex") == c2.expected
 
     def test_s6c42(self):
-        _, pub_key, _ = self.get_keys('test/fixtures/e3_test_key')
+        priv_key, pub_key, key_len_bytes = self.get_keys('test/fixtures/e3_test_key')
 
-        content = b'hi mom'
-        c42.forge_signature(pub_key, content)
+        msg = b'hi mom'
+        fake_sig = c42.forge_signature(pub_key, msg)
+        real_sig = pkcs15.sign(priv_key, key_len_bytes, msg)
 
-        # TODO: check that the broken implementation parses this
+        self.assertNotEqual(fake_sig, real_sig)
+
+        real, _ = pkcs15.verify_unsafe(pub_key, key_len_bytes, real_sig, msg)
+        self.assertTrue(real)
+
+        fake, _ = pkcs15.verify_unsafe(pub_key, key_len_bytes, fake_sig, msg)
+        self.assertTrue(fake)
+
+        # TODO: create a verify routine that rejects the fake
 
     def test_pkcs(self):
         priv_key, pub_key, key_len_bytes = self.get_keys('test/fixtures/e3_test_key')
