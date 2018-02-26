@@ -1,16 +1,26 @@
 import codecs
 import unittest
 
-import os
-
 from Crypto.PublicKey import RSA
 
+import pkcs15
 import s1c1 as c1
 import s1c2 as c2
 import s6c42 as c42
 
 
 class TestSolutions(unittest.TestCase):
+    def get_keys(self, key_name: str):
+        with open(key_name) as f:
+            priv_key = RSA.importKey(f.read())
+
+        with open(key_name + ".pub") as f:
+            pub_key = RSA.importKey(f.read())
+
+        key_len = c42.get_key_length_in_bytes(priv_key)
+
+        return priv_key, pub_key, key_len
+
     def test_s1c1(self):
         h = c1.fromhex(c1.t)
         r = c1.base64encode(h)
@@ -28,18 +38,20 @@ class TestSolutions(unittest.TestCase):
         assert codecs.encode(r, "hex") == c2.expected
 
     def test_s6c42(self):
-        pub_key = os.environ.get('RSA_KEY', 'test/fixtures/e3_test_key.pub')
-
-        with open(pub_key) as f:
-            key = RSA.importKey(f.read())
+        _, pub_key, _ = self.get_keys('test/fixtures/e3_test_key')
 
         content = b'hi mom'
-        c42.forge_signature(key, content)
+        c42.forge_signature(pub_key, content)
 
         # TODO: check that the broken implementation parses this
 
     def test_pkcs(self):
-        pass
+        priv_key, pub_key, key_len_bytes = self.get_keys('test/fixtures/e3_test_key')
+
+        msg = b'test string'
+        sig = pkcs15.sign(priv_key, key_len_bytes, msg)
+
+        pkcs15.verify_unsafe(pub_key, key_len_bytes, sig, msg)
 
 
 if __name__ == '__main__':

@@ -31,11 +31,15 @@ def round_up_power_2(n):
     return 2 ** m
 
 
+def get_key_length_in_bytes(key) -> int:
+    return round_up_power_2(key.size()) // 8
+
+
 def forge_signature(key, content: bytes, ff_len: int = 6):
     assert getattr(key, 'd', None) is None
     assert key.e == 3
 
-    key_byte_len = round_up_power_2(key.size()) // 8
+    key_byte_len = get_key_length_in_bytes(key)
 
     debug(key_byte_len)
 
