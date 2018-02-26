@@ -38,6 +38,8 @@ class TestSolutions(unittest.TestCase):
 
         # TODO: check that the broken implementation parses this
 
+    def test_pkcs(self):
+        pass
 
 if __name__ == '__main__':
     unittest.main()

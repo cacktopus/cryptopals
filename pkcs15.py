@@ -4,6 +4,7 @@ import binascii
 import os
 import sys
 from hashlib import sha256
+from typing import Tuple, Dict
 
 from Crypto.PublicKey import RSA
 
@@ -46,7 +47,7 @@ def rsasp1(n, d, m):
     return modexp(m, n, d)
 
 
-def sign(key, em_len: int) -> bytes:
+def sign_cmd(key, em_len: int) -> bytes:
     fn = sys.argv.pop(0)
     data = open(fn, "rb").read()
     em = emsa_pcks1_v1_5_encode(data, em_len)
@@ -56,7 +57,7 @@ def sign(key, em_len: int) -> bytes:
     return o
 
 
-def decode(key, em_len: int) -> bytes:
+def decode_cmd(key, em_len: int) -> bytes:
     fn = sys.argv.pop(0)
     data = open(fn, "rb").read()
     s = os2ip(data)
@@ -100,22 +101,34 @@ def check_sha256_header(d):
     return d[:32]
 
 
-def verify_unsafe(key, em_len):
-    sig_fn = sys.argv.pop(0)
-    data = open(sig_fn, "rb").read()
-    s = os2ip(data)
+def verify_unsafe(key, em_len: int, sig: bytes, msg: bytes) -> Tuple[bool, Dict]:
+    """Returns true if signature is correctly verified"""
+    s = os2ip(sig)
     m = modexp(s, key.n, key.e)
     d = i2osp(m, em_len)
 
     d = decode_pkcs_padding_unsafe(d)
     d = check_sha256_header(d)
 
-    data_fn = sys.argv.pop(0)
-    data = open(data_fn, "rb").read()
-    sig1 = sha256(data).hexdigest()
+    sig1 = sha256(msg).hexdigest()
     sig2 = binascii.hexlify(d).decode()
 
-    assert sig1 == sig2, "Signature mismatch: " + str(sig1) + " != " + str(sig2)
+    return sig1 == sig2, dict(
+        sig1=sig1,
+        sig2=sig2,
+    )
+
+
+def verify_unsafe_cmd(key, em_len):
+    sig_fn = sys.argv.pop(0)
+    sig = open(sig_fn, "rb").read()
+
+    data_fn = sys.argv.pop(0)
+    data = open(data_fn, "rb").read()
+
+    verified, info = verify_unsafe(key, em_len, sig, data)
+
+    assert verified, "Signature mismatch: " + str(info["sig1"]) + " != " + str(info["sig2"])
 
     return b'Verified OK\n'
 
@@ -136,9 +149,9 @@ def main():
     cmd = os.path.basename(cmd)
 
     fn = {
-        "sign": sign,
-        "verify-unsafe": verify_unsafe,
-        "decode": decode,
+        "sign": sign_cmd,
+        "verify-unsafe": verify_unsafe_cmd,
+        "decode": decode_cmd,
     }.get(cmd, unknown_command)
 
     o = fn(key, em_len)
