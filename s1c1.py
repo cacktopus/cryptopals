@@ -13,10 +13,10 @@ def b64encode_character(i: int) -> chr:
         return chr(i + ord('A'))
 
     if i <= 51:
-        return chr(i-26 + ord('a'))
+        return chr(i - 26 + ord('a'))
 
     if i <= 61:
-        return chr(i-52 + ord('0'))
+        return chr(i - 52 + ord('0'))
 
     if i == 62:
         return '+'
@@ -38,11 +38,3 @@ def base64encode(i: int):
         i >>= 6
 
     return ''.join(reversed(result))
-
-
-def main():
-    print(base64encode(fromhex(t)))
-
-
-if __name__ == '__main__':
-    main()
