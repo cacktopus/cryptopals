@@ -1,6 +1,10 @@
 import codecs
 import unittest
 
+import os
+
+from Crypto.PublicKey import RSA
+
 import s1c1 as c1
 import s1c2 as c2
 import s6c42 as c42
@@ -24,7 +28,16 @@ class TestSolutions(unittest.TestCase):
         assert codecs.encode(r, "hex") == c2.expected
 
     def test_s6c42(self):
-        c42.main()
+        # TODO: this should use the public key
+        priv_key = os.environ.get('RSA_KEY', 'test/fixtures/e3_test_key')
+
+        with open(priv_key) as f:
+            key = RSA.importKey(f.read())
+
+        content = b'hi mom'
+        c42.forge_signature(key, content)
+
+        # TODO: check that the broken implementation parses this
 
 
 if __name__ == '__main__':

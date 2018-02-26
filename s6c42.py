@@ -1,26 +1,12 @@
 import binascii
-import itertools
 import math
-import os
 from hashlib import sha256
-
-from Crypto.PublicKey import RSA
 
 from pkcs15 import i2osp, SHA256_HEADER, os2ip
 from util import modexp
 
 DEBUG = False
 debug = print if DEBUG else lambda *args, **kwargs: None
-
-
-def hexdump(s):
-    return binascii.hexlify(s)
-
-
-def next_perfect_cube(n):
-    for i in itertools.count():
-        if i ** 3 > n:
-            return i
 
 
 def icbrt(n: int, lo: int = 1, hi: int = None):
@@ -45,20 +31,15 @@ def round_up_power_2(n):
     return 2 ** m
 
 
-def main():
-    priv_key = os.environ.get('RSA_KEY', 'test/fixtures/e3_test_key')
-
-    with open(priv_key) as f:
-        key = RSA.importKey(f.read())
+def forge_signature(key, content: bytes, ff_len: int = 6):
+    # TODO: assert key is public key
+    assert key.e == 3
 
     key_byte_len = round_up_power_2(key.size()) // 8
 
     debug(key_byte_len)
 
-    content = b'hi mom'
     digest = sha256(content).digest()
-
-    ff_len = 6
 
     msg = b'\x00' + b'\x01' + b'\xff' * ff_len + b'\x00' + SHA256_HEADER + digest
 
@@ -76,14 +57,15 @@ def main():
     assert res < key.n
 
     debug(res, end="\n\n")
-
     debug(nxt, end="\n\n")
 
-    forgery = i2osp(res)
+    forgery = binascii.hexlify(i2osp(res, key_byte_len))
 
-    debug(binascii.hexlify(i2osp(n)), end="\n\n")
-    debug(binascii.hexlify(forgery), end="\n\n")
+    desired = binascii.hexlify(i2osp(n, key_byte_len))
+    debug(desired, end="\n\n")
+    debug(forgery, end="\n\n")
 
+    msg_len_hex = len(msg) * 2
+    assert desired[:msg_len_hex] == forgery[:msg_len_hex]
 
-if __name__ == '__main__':
-    main()
+    return forgery
