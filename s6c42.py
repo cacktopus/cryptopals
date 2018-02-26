@@ -9,6 +9,9 @@ from Crypto.PublicKey import RSA
 from pkcs15 import i2osp, SHA256_HEADER, os2ip
 from util import modexp
 
+DEBUG = False
+debug = print if DEBUG else lambda *args, **kwargs: None
+
 
 def hexdump(s):
     return binascii.hexlify(s)
@@ -50,7 +53,7 @@ def main():
 
     key_byte_len = round_up_power_2(key.size()) // 8
 
-    print(key_byte_len)
+    debug(key_byte_len)
 
     content = b'hi mom'
     digest = sha256(content).digest()
@@ -65,21 +68,21 @@ def main():
     n = os2ip(padded)
     nxt = icbrt(n) + 1
 
-    print(n, end="\n\n")
+    debug(n, end="\n\n")
 
     res = modexp(nxt, key.n, key.e)
     # res = nxt ** 3
 
     assert res < key.n
 
-    print(res, end="\n\n")
+    debug(res, end="\n\n")
 
-    print(nxt, end="\n\n")
+    debug(nxt, end="\n\n")
 
     forgery = i2osp(res)
 
-    print(binascii.hexlify(i2osp(n)), end="\n\n")
-    print(binascii.hexlify(forgery), end="\n\n")
+    debug(binascii.hexlify(i2osp(n)), end="\n\n")
+    debug(binascii.hexlify(forgery), end="\n\n")
 
 
 if __name__ == '__main__':
