@@ -41,5 +41,6 @@ class TestSolutions(unittest.TestCase):
     def test_pkcs(self):
         pass
 
+
 if __name__ == '__main__':
     unittest.main()

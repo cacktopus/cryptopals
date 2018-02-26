@@ -47,14 +47,18 @@ def rsasp1(n, d, m):
     return modexp(m, n, d)
 
 
-def sign_cmd(key, em_len: int) -> bytes:
-    fn = sys.argv.pop(0)
-    data = open(fn, "rb").read()
-    em = emsa_pcks1_v1_5_encode(data, em_len)
+def sign(key, em_len: int, msg: bytes) -> bytes:
+    em = emsa_pcks1_v1_5_encode(msg, em_len)
     n = os2ip(em)
     s = rsasp1(key.n, key.d, n)
     o = i2osp(s, em_len)
     return o
+
+
+def sign_cmd(key, em_len: int) -> bytes:
+    fn = sys.argv.pop(0)
+    data = open(fn, "rb").read()
+    return sign(key, em_len, data)
 
 
 def decode_cmd(key, em_len: int) -> bytes:
