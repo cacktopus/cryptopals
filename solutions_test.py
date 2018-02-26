@@ -28,10 +28,9 @@ class TestSolutions(unittest.TestCase):
         assert codecs.encode(r, "hex") == c2.expected
 
     def test_s6c42(self):
-        # TODO: this should use the public key
-        priv_key = os.environ.get('RSA_KEY', 'test/fixtures/e3_test_key')
+        pub_key = os.environ.get('RSA_KEY', 'test/fixtures/e3_test_key.pub')
 
-        with open(priv_key) as f:
+        with open(pub_key) as f:
             key = RSA.importKey(f.read())
 
         content = b'hi mom'

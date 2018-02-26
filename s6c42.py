@@ -32,7 +32,7 @@ def round_up_power_2(n):
 
 
 def forge_signature(key, content: bytes, ff_len: int = 6):
-    # TODO: assert key is public key
+    assert getattr(key, 'd', None) is None
     assert key.e == 3
 
     key_byte_len = round_up_power_2(key.size()) // 8
