@@ -3,6 +3,8 @@ from typing import Optional
 import util
 import random
 
+from s5c39 import fast_multiplicative_inverse
+
 
 class Server:
     def __init__(self, key_name):
@@ -36,9 +38,20 @@ class Client:
 
 
 def main():
-    s = Server("test/fixtures/server_key")
-    c = Client(s)
-    print(c.em)
+    server = Server("test/fixtures/server_key")
+    client = Client(server)
+
+    assert server.decrypt(client.em) is None
+
+    s = random.randint(2, server.pub_key.n)
+    t = util.modexp(s, server.pub_key.n, server.pub_key.e)
+    c_prime = t * client.em % server.pub_key.n
+    p_prime = server.decrypt(c_prime)
+    inv = fast_multiplicative_inverse(s, server.pub_key.n)
+    msg = p_prime * inv % server.pub_key.n
+
+    assert msg == client._msg
+    assert msg < 1000000
 
 
 if __name__ == '__main__':
