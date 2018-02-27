@@ -49,3 +49,7 @@ def get_keys(key_name: str):
     key_len = get_key_length_in_bytes(priv_key)
 
     return priv_key, pub_key, key_len
+
+
+def debug_print(enabled):
+    return print if enabled else lambda *args, **kwargs: None

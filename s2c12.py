@@ -1,8 +1,10 @@
 import codecs
 
+import util
 from s2c10 import ecb_encrypt
 from s2c11 import random_AES_key
 from s2c9 import pkcs7_padding
+from s6c42 import debug
 
 KEY = random_AES_key()
 
@@ -14,6 +16,8 @@ YnkK
 '''.split())
 
 UNKNOWN = codecs.decode(UNKNOWN, 'base64')
+
+debug = util.debug_print(False)
 
 
 def oracle(key: bytes, unknown_string: bytes, your_string: bytes) -> bytes:
@@ -33,7 +37,7 @@ def find_length(f):
                 return block_size, msg_length
         prev = sz
     else:
-        raise Exception("Unknown block size")
+        raise Exception("Unknown block size")  # pragma nocover
 
 
 def main():
@@ -48,7 +52,7 @@ def main():
     while len(found) < unknown_length:
         block += 1
         for position in range(block_size):
-            print(block, position, len(found), unknown_length)
+            debug(block, position, len(found), unknown_length)
             if len(found) == unknown_length:
                 break
             padding = b"A" * (block_size - position - 1)
@@ -65,11 +69,13 @@ def main():
 
                 if ct == target_ct:
                     found += bytes([i])
-                    print(found)
+                    debug(found)
                     break
             else:
-                assert False, "not found"
+                assert False, "not found"  # pragma nocover
+
+    return found
 
 
 if __name__ == '__main__':
-    main()
+    main()  # pragma nocover

@@ -5,6 +5,7 @@ import pkcs15
 import rsa
 import s1c1 as c1
 import s1c2 as c2
+import s2c12 as c12
 import s6c41 as c41
 import s6c42 as c42
 import util
@@ -26,6 +27,10 @@ class TestSolutions(unittest.TestCase):
         r = c2.xor2(i0, i1)
 
         assert codecs.encode(r, "hex") == c2.expected
+
+    def test_s2c12(self):
+        found = c12.main()
+        self.assertEqual(found, c12.UNKNOWN)
 
     def test_s6c41(self):
         c41.main()
