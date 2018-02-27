@@ -1,3 +1,8 @@
+import math
+
+from Crypto.PublicKey import RSA
+
+
 class Chain:
     def __init__(self, *functions):
         self.functions = functions
@@ -23,3 +28,24 @@ def modexp(base, modulus, exponent):
         exponent >>= 1
 
     return result
+
+
+def round_up_power_2(n):
+    m = int(math.floor(math.log2(n))) + 1
+    return 2 ** m
+
+
+def get_key_length_in_bytes(key) -> int:
+    return round_up_power_2(key.size()) // 8
+
+
+def get_keys(key_name: str):
+    with open(key_name) as f:
+        priv_key = RSA.importKey(f.read())
+
+    with open(key_name + ".pub") as f:
+        pub_key = RSA.importKey(f.read())
+
+    key_len = get_key_length_in_bytes(priv_key)
+
+    return priv_key, pub_key, key_len

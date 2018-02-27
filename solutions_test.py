@@ -1,26 +1,14 @@
 import codecs
 import unittest
 
-from Crypto.PublicKey import RSA
-
 import pkcs15
 import s1c1 as c1
 import s1c2 as c2
 import s6c42 as c42
+import util
 
 
 class TestSolutions(unittest.TestCase):
-    def get_keys(self, key_name: str):
-        with open(key_name) as f:
-            priv_key = RSA.importKey(f.read())
-
-        with open(key_name + ".pub") as f:
-            pub_key = RSA.importKey(f.read())
-
-        key_len = c42.get_key_length_in_bytes(priv_key)
-
-        return priv_key, pub_key, key_len
-
     def test_s1c1(self):
         h = c1.fromhex(c1.t)
         r = c1.base64encode(h)
@@ -38,7 +26,7 @@ class TestSolutions(unittest.TestCase):
         assert codecs.encode(r, "hex") == c2.expected
 
     def test_s6c42(self):
-        priv_key, pub_key, key_len_bytes = self.get_keys('test/fixtures/e3_test_key')
+        priv_key, pub_key, key_len_bytes = util.get_keys('test/fixtures/e3_test_key')
 
         msg = b'hi mom'
         fake_sig = c42.forge_signature(pub_key, msg)
@@ -55,7 +43,7 @@ class TestSolutions(unittest.TestCase):
         # TODO: create a verify routine that rejects the fake
 
     def test_pkcs(self):
-        priv_key, pub_key, key_len_bytes = self.get_keys('test/fixtures/e3_test_key')
+        priv_key, pub_key, key_len_bytes = util.get_keys('test/fixtures/e3_test_key')
 
         msg = b'test string'
         sig = pkcs15.sign(priv_key, key_len_bytes, msg)
