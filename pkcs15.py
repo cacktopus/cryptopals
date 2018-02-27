@@ -1,12 +1,6 @@
-#!/usr/bin/env python
-
 import binascii
-import os
-import sys
 from hashlib import sha256
 from typing import Tuple, Dict
-
-from Crypto.PublicKey import RSA
 
 from util import modexp
 
@@ -53,21 +47,6 @@ def sign(key, em_len: int, msg: bytes) -> bytes:
     s = rsasp1(key.n, key.d, n)
     o = i2osp(s, em_len)
     return o
-
-
-def sign_cmd(key, em_len: int) -> bytes:
-    fn = sys.argv.pop(0)
-    data = open(fn, "rb").read()
-    return sign(key, em_len, data)
-
-
-def decode_cmd(key, em_len: int) -> bytes:
-    fn = sys.argv.pop(0)
-    data = open(fn, "rb").read()
-    s = os2ip(data)
-    m = modexp(s, key.n, key.e)
-    d = i2osp(m, em_len)
-    return d
 
 
 def decode_pkcs_padding_unsafe(d):
@@ -121,46 +100,3 @@ def verify_unsafe(key, em_len: int, sig: bytes, msg: bytes) -> Tuple[bool, Dict]
         sig1=sig1,
         sig2=sig2,
     )
-
-
-def verify_unsafe_cmd(key, em_len):
-    sig_fn = sys.argv.pop(0)
-    sig = open(sig_fn, "rb").read()
-
-    data_fn = sys.argv.pop(0)
-    data = open(data_fn, "rb").read()
-
-    verified, info = verify_unsafe(key, em_len, sig, data)
-
-    assert verified, "Signature mismatch: " + str(info["sig1"]) + " != " + str(info["sig2"])
-
-    return b'Verified OK\n'
-
-
-def unknown_command(*args):
-    raise RuntimeError("Unknown command")
-
-
-def main():
-    priv_key = os.environ['RSA_KEY']
-    key = RSA.importKey(open(priv_key).read())
-
-    h = hex(key.n)
-    n = binascii.unhexlify(h.lstrip("0x"))  # TODO: should be better way to do this
-    em_len = len(n)
-
-    cmd = sys.argv.pop(0)
-    cmd = os.path.basename(cmd)
-
-    fn = {
-        "sign": sign_cmd,
-        "verify-unsafe": verify_unsafe_cmd,
-        "decode": decode_cmd,
-    }.get(cmd, unknown_command)
-
-    o = fn(key, em_len)
-    sys.stdout.buffer.write(o)
-
-
-if __name__ == '__main__':
-    main()

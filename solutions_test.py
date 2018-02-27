@@ -2,6 +2,7 @@ import codecs
 import unittest
 
 import pkcs15
+import rsa
 import s1c1 as c1
 import s1c2 as c2
 import s6c41 as c41
@@ -53,6 +54,9 @@ class TestSolutions(unittest.TestCase):
         sig = pkcs15.sign(priv_key, key_len_bytes, msg)
 
         pkcs15.verify_unsafe(pub_key, key_len_bytes, sig, msg)
+
+    def test_rca_command_line(self):
+        assert rsa.main
 
 
 if __name__ == '__main__':
