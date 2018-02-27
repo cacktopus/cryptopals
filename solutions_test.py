@@ -4,6 +4,7 @@ import unittest
 import pkcs15
 import s1c1 as c1
 import s1c2 as c2
+import s6c41 as c41
 import s6c42 as c42
 import util
 
@@ -24,6 +25,9 @@ class TestSolutions(unittest.TestCase):
         r = c2.xor2(i0, i1)
 
         assert codecs.encode(r, "hex") == c2.expected
+
+    def test_s6c41(self):
+        c41.main()
 
     def test_s6c42(self):
         priv_key, pub_key, key_len_bytes = util.get_keys('test/fixtures/e3_test_key')
