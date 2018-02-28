@@ -4,7 +4,7 @@ from Crypto.Cipher import AES
 from s1c2 import xor2
 
 
-def ecb_encrypt(key: bytes, data: bytes):
+def ecb_encrypt(key: bytes, data: bytes) -> bytes:
     assert len(data) % 16 == 0
     result = []
     while data:
@@ -12,6 +12,18 @@ def ecb_encrypt(key: bytes, data: bytes):
         data = data[16:]
         encrypter = AES.new(key, mode=AES.MODE_ECB)
         ct = encrypter.encrypt(block)
+        result.append(ct)
+    return b"".join(result)
+
+
+def ecb_decrypt(key: bytes, data: bytes) -> bytes:
+    assert len(data) % 16 == 0
+    result = []
+    while data:
+        block = data[:16]
+        data = data[16:]
+        decrypter = AES.new(key, mode=AES.MODE_ECB)
+        ct = decrypter.decrypt(block)
         result.append(ct)
     return b"".join(result)
 

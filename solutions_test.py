@@ -30,6 +30,7 @@ class TestSolutions(unittest.TestCase):
         assert codecs.encode(r, "hex") == c2.expected
 
     def test_s2c12(self):
+        self.skipTest("slow")
         found = c12.main()
         self.assertEqual(found, c12.UNKNOWN)
 
@@ -50,6 +51,15 @@ class TestSolutions(unittest.TestCase):
             c13.profile_for("foo@bar.com&role=admin", "10", "user"),
             "email=foo@bar.comroleadmin&uid=10&role=user",
         )
+
+        e = c13.encrypt_profile("foo@bar.com")
+        p = c13.decrypt(e)
+
+        self.assertEqual(p, {
+            "email": "foo@bar.com",
+            "uid": "10",
+            "role": "user",
+        })
 
     def test_s6c41(self):
         c41.main()
