@@ -6,6 +6,7 @@ import rsa
 import s1c1 as c1
 import s1c2 as c2
 import s2c12 as c12
+import s2c13 as c13
 import s6c41 as c41
 import s6c42 as c42
 import util
@@ -31,6 +32,18 @@ class TestSolutions(unittest.TestCase):
     def test_s2c12(self):
         found = c12.main()
         self.assertEqual(found, c12.UNKNOWN)
+
+    def test_s2c13(self):
+        res = c13.parse_kv('foo=bar&baz=qux&zap=zazzle')
+        self.assertEqual(res, {
+            "foo": "bar",
+            "baz": "qux",
+            "zap": "zazzle",
+        })
+
+        self.assertEqual(c13.profile_for(
+            "foo@bar.com", "10", "user"
+        ), "email=foo@bar.com&uid=10&role=user")
 
     def test_s6c41(self):
         c41.main()
