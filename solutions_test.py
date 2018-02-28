@@ -41,9 +41,15 @@ class TestSolutions(unittest.TestCase):
             "zap": "zazzle",
         })
 
-        self.assertEqual(c13.profile_for(
-            "foo@bar.com", "10", "user"
-        ), "email=foo@bar.com&uid=10&role=user")
+        self.assertEqual(
+            c13.profile_for("foo@bar.com", "10", "user"),
+            "email=foo@bar.com&uid=10&role=user",
+        )
+
+        self.assertEqual(
+            c13.profile_for("foo@bar.com&role=admin", "10", "user"),
+            "email=foo@bar.comroleadmin&uid=10&role=user",
+        )
 
     def test_s6c41(self):
         c41.main()
