@@ -7,7 +7,8 @@ import util
 from s2c10 import ecb_encrypt, ecb_decrypt
 from s2c9 import pkcs7_padding
 
-KEY = s2c11.random_AES_key()
+# KEY = s2c11.random_AES_key()
+KEY = b"a" * 16
 debug = util.debug_print(False)
 
 
@@ -16,20 +17,20 @@ def parse_kv(s: str) -> Dict:
     return dict(pairs)
 
 
-def encode_pair(k: str, v: str) -> str:
-    return "{}={}".format(k, v.replace("&", "").replace("=", ""))
+def encode_pair(k: bytes, v: bytes) -> bytes:
+    return b"".join([k, b"=", v.replace(b"&", b"").replace(b"=", b"")])
 
 
-def profile_for(email: str, uid: str, role: str) -> str:
-    return "&".join([
-        encode_pair("email", email),
-        encode_pair("uid", uid),
-        encode_pair("role", role),
+def profile_for(email: bytes, uid: bytes, role: bytes) -> bytes:
+    return b"&".join([
+        encode_pair(b"email", email),
+        encode_pair(b"uid", uid),
+        encode_pair(b"role", role),
     ])
 
 
-def encrypt_profile(email: str) -> bytes:
-    data = profile_for(email, "10", "user").encode()
+def encrypt_profile(email: bytes) -> bytes:
+    data = profile_for(email, b"10", b"user")
     padded = pkcs7_padding(data, 16)
     return ecb_encrypt(KEY, padded)
 
@@ -57,3 +58,21 @@ def decrypt(data: bytes) -> Dict:
     debug(binascii.hexlify(s))
     unpadded = pkcs7_unpad(s)
     return parse_kv(unpadded.decode())
+
+
+def main():
+    """
+
+123456789012345612345678901234561234567890123456
+1               2               3
+email=          admin           &uid=10&role=user
+
+
+    """
+
+    p = encrypt_profile(b" " * 9 + b"admin" + b" " * (16 - 5))
+    print(len(p), binascii.hexlify(p))
+
+
+if __name__ == '__main__':
+    main()
