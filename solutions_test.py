@@ -43,16 +43,16 @@ class TestSolutions(unittest.TestCase):
         })
 
         self.assertEqual(
-            c13.profile_for("foo@bar.com", "10", "user"),
-            "email=foo@bar.com&uid=10&role=user",
+            c13.profile_for(b"foo@bar.com", b"10", b"user"),
+            b"email=foo@bar.com&uid=10&role=user",
         )
 
         self.assertEqual(
-            c13.profile_for("foo@bar.com&role=admin", "10", "user"),
-            "email=foo@bar.comroleadmin&uid=10&role=user",
+            c13.profile_for(b"foo@bar.com&role=admin", b"10", b"user"),
+            b"email=foo@bar.comroleadmin&uid=10&role=user",
         )
 
-        e = c13.encrypt_profile("foo@bar.com")
+        e = c13.encrypt_profile(b"foo@bar.com")
         p = c13.decrypt(e)
 
         self.assertEqual(p, {

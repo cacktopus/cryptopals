@@ -1,15 +1,10 @@
 from typing import Dict
 
-import binascii
-
 import s2c11
-import util
 from s2c10 import ecb_encrypt, ecb_decrypt
 from s2c9 import pkcs7_padding
 
-# KEY = s2c11.random_AES_key()
-KEY = b"a" * 16
-debug = util.debug_print(False)
+KEY = s2c11.random_AES_key()
 
 
 def parse_kv(s: str) -> Dict:
@@ -38,6 +33,7 @@ def encrypt_profile(email: bytes) -> bytes:
 def pkcs7_unpad(data: bytes) -> bytes:
     # TODO: needs its own unit tests
     # This kind of padding just seems like a bad idea
+    # Seems like some blocks can't be represented
     assert len(data) % 16 == 0
     n = len(data)
     head = data[:n - 16]
@@ -55,23 +51,43 @@ def pkcs7_unpad(data: bytes) -> bytes:
 
 def decrypt(data: bytes) -> Dict:
     s = ecb_decrypt(KEY, data)
-    debug(binascii.hexlify(s))
     unpadded = pkcs7_unpad(s)
     return parse_kv(unpadded.decode())
 
 
+def get_block(data, block_num):
+    assert len(data) % 16 == 0
+    return data[block_num * 16: (block_num + 1) * 16]
+
+
+def get_blocks(data, *block_numbers):
+    assert len(data) % 16 == 0
+    blocks = list(sorted(set(block_numbers)))
+    return b"".join(get_block(data, b) for b in blocks)
+
+
 def main():
     """
+        123456789012345612345678901234561234567890123456
+        1               2               3
+        email=          admin           &uid=10&role=user
 
-123456789012345612345678901234561234567890123456
-1               2               3
-email=          admin           &uid=10&role=user
-
-
+        123456789012345612345678901234561234567890123456
+        1               2               3
+        email=aaaaaaa@b.com&uid=10&role=user
     """
 
-    p = encrypt_profile(b" " * 9 + b"admin" + b" " * (16 - 5))
-    print(len(p), binascii.hexlify(p))
+    p = encrypt_profile(b" " * 10 + pkcs7_padding(b"admin", 16))
+    admin = get_blocks(p, 1)
+
+    p2 = encrypt_profile(b"aaaaaaa@b.com")
+    start = get_blocks(p2, 0, 1)
+
+    forged = start + admin
+
+    # Check solution
+    decoded = decrypt(forged)
+    assert decoded['role'] == 'admin'
 
 
 if __name__ == '__main__':
