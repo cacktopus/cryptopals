@@ -61,6 +61,8 @@ class TestSolutions(unittest.TestCase):
             "role": "user",
         })
 
+        c13.main()
+
     def test_s6c41(self):
         c41.main()
 
