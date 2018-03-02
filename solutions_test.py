@@ -11,6 +11,8 @@ import s2c16 as c16
 import s6c41 as c41
 import s6c42 as c42
 import util
+from s2c10 import cbc_encrypt
+from s2c9 import pkcs7_padding
 
 
 class TestSolutions(unittest.TestCase):
@@ -66,7 +68,20 @@ class TestSolutions(unittest.TestCase):
 
     def test_s2c16(self):
         result = c16.userdata(b";admin=true")
-        self.assertEqual(result, b"comment1=cooking%20MCs;userdata=%59admin%61true;comment2=%20like%20a%20pound%20of%20bacon")
+        self.assertEqual(result,
+                         b"comment1=cooking%20MCs;userdata=%59admin%61true;comment2=%20like%20a%20pound%20of%20bacon")
+
+        def encrypt(m: bytes) -> bytes:
+            padded = pkcs7_padding(m, 16)
+            return cbc_encrypt(c16.KEY, padded)
+
+        self.assertTrue(
+            c16.is_admin(encrypt(b"abc=123;admin=true;def=456"))
+        )
+
+        self.assertFalse(
+            c16.is_admin(encrypt(b"abc=123;admin%61true;def=456"))
+        )
 
     def test_s6c41(self):
         c41.main()
