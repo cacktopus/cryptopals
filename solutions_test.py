@@ -83,6 +83,15 @@ class TestSolutions(unittest.TestCase):
             c16.is_admin(encrypt(b"abc=123;admin%61true;def=456"))
         )
 
+        payload = c16.encrypted_userdata(b";admin=true")
+
+        self.assertEqual(c16.decrypt(payload),
+                         b"comment1=cooking%20MCs;userdata=%59admin%61true;comment2=%20like%20a%20pound%20of%20bacon")
+
+        self.assertFalse(
+            c16.is_admin(payload)
+        )
+
     def test_s6c41(self):
         c41.main()
 
