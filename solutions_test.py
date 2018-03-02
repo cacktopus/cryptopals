@@ -7,6 +7,7 @@ import s1c1 as c1
 import s1c2 as c2
 import s2c12 as c12
 import s2c13 as c13
+import s2c16 as c16
 import s6c41 as c41
 import s6c42 as c42
 import util
@@ -62,6 +63,10 @@ class TestSolutions(unittest.TestCase):
         })
 
         c13.main()
+
+    def test_s2c16(self):
+        result = c16.userdata(b";admin=true")
+        self.assertEqual(result, b"comment1=cooking%20MCs;userdata=%59admin%61true;comment2=%20like%20a%20pound%20of%20bacon")
 
     def test_s6c41(self):
         c41.main()
