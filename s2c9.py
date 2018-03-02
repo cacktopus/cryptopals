@@ -1,4 +1,9 @@
 def pkcs7_padding(s: bytes, length: int):
+    # TODO: this needs its own unit tests
+
+    if len(s) % length == 0:
+        return s + bytes([16] * 16)
+
     remainder = len(s) % length
     if remainder == 0:
         return s

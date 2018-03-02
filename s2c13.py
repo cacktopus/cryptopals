@@ -32,6 +32,7 @@ def encrypt_profile(email: bytes) -> bytes:
 
 def pkcs7_unpad(data: bytes) -> bytes:
     # TODO: needs its own unit tests
+    # TODO: need to handle the full block of 16's case
     # This kind of padding just seems like a bad idea
     # Seems like some blocks can't be represented
     assert len(data) % 16 == 0
