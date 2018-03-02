@@ -4,7 +4,7 @@ from collections import Counter
 import random
 
 from s2c10 import cbc_encrypt, ecb_encrypt
-from s2c9 import pkcs7_padding
+from pkcs7_padding import pkcs7_padding
 
 
 def chunk(size: int, data: bytes) -> Generator[bytes, None, None]:

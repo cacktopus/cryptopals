@@ -3,7 +3,7 @@ import codecs
 import util
 from s2c10 import ecb_encrypt
 from s2c11 import random_AES_key
-from s2c9 import pkcs7_padding
+from pkcs7_padding import pkcs7_padding
 from s6c42 import debug
 
 KEY = random_AES_key()

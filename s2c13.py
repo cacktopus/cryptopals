@@ -2,7 +2,7 @@ from typing import Dict
 
 import s2c11
 from s2c10 import ecb_encrypt, ecb_decrypt
-from s2c9 import pkcs7_padding
+from pkcs7_padding import pkcs7_padding, pkcs7_unpad
 
 KEY = s2c11.random_AES_key()
 
@@ -28,26 +28,6 @@ def encrypt_profile(email: bytes) -> bytes:
     data = profile_for(email, b"10", b"user")
     padded = pkcs7_padding(data, 16)
     return ecb_encrypt(KEY, padded)
-
-
-def pkcs7_unpad(data: bytes) -> bytes:
-    # TODO: needs its own unit tests
-    # TODO: need to handle the full block of 16's case
-    # This kind of padding just seems like a bad idea
-    # Seems like some blocks can't be represented
-    assert len(data) % 16 == 0
-    n = len(data)
-    head = data[:n - 16]
-    last_block = data[n - 16:n]
-    assert len(last_block) == 16
-    last_char = last_block[-1]
-    if last_char < 16:
-        target = bytes([last_char]) * last_char
-        end = last_block[16 - last_char:16]
-        if target == end:
-            trimmed = last_block[:16 - last_char]
-            return head + trimmed
-    return data
 
 
 def decrypt(data: bytes) -> Dict:

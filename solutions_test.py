@@ -12,7 +12,7 @@ import s6c41 as c41
 import s6c42 as c42
 import util
 from s2c10 import cbc_encrypt
-from s2c9 import pkcs7_padding
+from pkcs7_padding import pkcs7_padding
 
 
 class TestSolutions(unittest.TestCase):

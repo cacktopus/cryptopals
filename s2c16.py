@@ -1,7 +1,7 @@
 import s2c11
 from s2c10 import cbc_encrypt, cbc_decrypt
-from s2c13 import pkcs7_unpad, get_block
-from s2c9 import pkcs7_padding
+from s2c13 import get_block
+from pkcs7_padding import pkcs7_padding, pkcs7_unpad
 
 KEY = s2c11.random_AES_key()
 
