@@ -3,7 +3,7 @@ import random
 
 import s2c11
 from s2c10 import cbc_encrypt, cbc_decrypt
-from pkcs7_padding import pkcs7_padding
+from pkcs7_padding import pkcs7_padding_valid, pkcs7_padding
 
 KEY = s2c11.random_AES_key()
 
@@ -32,7 +32,8 @@ def get_cookie():
 
 
 def check_token(ct: bytes, iv: bytes) -> bool:
-    return cbc_decrypt(KEY, ct, iv)
+    padded = cbc_decrypt(KEY, ct, iv)
+    return pkcs7_padding_valid(padded, 16)
 
 
 def main():
@@ -41,6 +42,7 @@ def main():
     print(iv)
 
     print(check_token(ct, iv))
+    print()
 
 
 if __name__ == '__main__':
