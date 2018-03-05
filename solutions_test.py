@@ -7,6 +7,7 @@ import s1c1 as c1
 import s1c2 as c2
 import s2c12 as c12
 import s2c13 as c13
+import s2c15 as c15
 import s2c16 as c16
 import s6c41 as c41
 import s6c42 as c42
@@ -65,6 +66,9 @@ class TestSolutions(unittest.TestCase):
         })
 
         c13.main()
+
+    def test_s2c15(self):
+        c15.main()
 
     def test_s2c16(self):
         result = c16.userdata(b";admin=true")

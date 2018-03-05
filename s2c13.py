@@ -32,7 +32,7 @@ def encrypt_profile(email: bytes) -> bytes:
 
 def decrypt(data: bytes) -> Dict:
     s = ecb_decrypt(KEY, data)
-    unpadded = pkcs7_unpad(s)
+    unpadded = pkcs7_unpad(s, 16)
     return parse_kv(unpadded.decode())
 
 

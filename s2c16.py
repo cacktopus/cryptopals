@@ -1,9 +1,12 @@
 import s2c11
+import util
 from s2c10 import cbc_encrypt, cbc_decrypt
 from s2c13 import get_block
 from pkcs7_padding import pkcs7_padding, pkcs7_unpad
 
 KEY = s2c11.random_AES_key()
+
+debug = util.debug_print(False)
 
 
 def escape(s: bytes) -> bytes:
@@ -27,7 +30,7 @@ def encrypted_userdata(s: bytes) -> bytes:
 
 def decrypt(em: bytes) -> bytes:
     unpadded = cbc_decrypt(KEY, em)
-    msg = pkcs7_unpad(unpadded)
+    msg = pkcs7_unpad(unpadded, 16)
     return msg
 
 
@@ -66,10 +69,10 @@ def main():
 
     p_ = b0 + flipped + b2 + b3 + b4 + b5
 
-    print(decrypt(p))
+    debug(decrypt(p))
     assert not is_admin(p)
 
-    print(decrypt(p_))
+    debug(decrypt(p_))
     assert is_admin(p_)
 
 

@@ -20,9 +20,11 @@ class BlockSizeError(Exception):
 
 
 def pkcs7_unpad(data: bytes, length: int) -> bytes:
-    if len(data) % length != 0:
-        raise BlockSizeError
     n = len(data)
+    if n == 0:
+        raise PaddingError
+    if n % length != 0:
+        raise BlockSizeError
     head = data[:n - length]
     last_block = data[n - length:n]
     assert len(last_block) == length
@@ -36,5 +38,9 @@ def pkcs7_unpad(data: bytes, length: int) -> bytes:
     raise PaddingError  # danger, this can lead to padding oracle attacks
 
 
-def check_padding(s: bytes, length: int):
-    raise NotImplementedError
+def pkcs7_padding_valid(data: bytes, length: int) -> bool:
+    try:
+        pkcs7_unpad(data, length)
+    except PaddingError:
+        return False
+    return True
