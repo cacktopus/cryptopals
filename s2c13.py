@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, List
 
 import s2c11
 from s2c10 import ecb_encrypt, ecb_decrypt
@@ -45,6 +45,15 @@ def get_blocks(data, *block_numbers):
     assert len(data) % 16 == 0
     blocks = list(sorted(set(block_numbers)))
     return b"".join(get_block(data, b) for b in blocks)
+
+
+def get_all_blocks(data: bytes) -> List[bytes]:
+    result = []
+    assert len(data) % 16 == 0
+    for i in range(0, len(data), 16):
+        block = data[i:i + 16]
+        result.append(block)
+    return result
 
 
 def main():

@@ -4,6 +4,7 @@ import random
 import s2c11
 from s2c10 import cbc_encrypt, cbc_decrypt
 from pkcs7_padding import pkcs7_padding_valid, pkcs7_padding
+from s2c13 import get_all_blocks
 
 KEY = s2c11.random_AES_key()
 
@@ -42,7 +43,22 @@ def main():
     print(iv)
 
     print(check_token(ct, iv))
-    print()
+
+    blocks = get_all_blocks(ct)
+    n = len(blocks)
+    prefix = b"".join(blocks[:n - 1])
+
+    last = list(blocks[-1])
+
+    for i in range(256):
+        trial = prefix + bytes(last[:15] + [i])
+        assert len(trial) % 16 == 0
+
+        a = check_token(trial, iv)
+        b = trial == ct
+
+        if a or b:
+            print(i, a, b)
 
 
 if __name__ == '__main__':
