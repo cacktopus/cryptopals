@@ -29,23 +29,22 @@ strings = [base64.b64decode(s) for s in strings]
 s = random.choice(strings)
 
 
-def get_cookie(key: bytes = KEY):
+def get_cookie():
     padded = pkcs7_padding(s, 16)
     iv = s2c11.random_bytes(16)
-    em = cbc_encrypt(key, padded, iv=iv)
+    em = cbc_encrypt(KEY, padded, iv=iv)
     return em, iv
 
 
-def check_token(ct: bytes, iv: bytes, key: bytes = KEY) -> bool:
-    padded = cbc_decrypt(key, ct, iv)
+def check_token(ct: bytes, iv: bytes) -> bool:
+    padded = cbc_decrypt(KEY, ct, iv)
     return pkcs7_padding_valid(padded, 16)
 
 
-def padding_oracle_attack(
+def padding_oracle_attack_for_block(
         block: List[int],
         iv: List[int],
         internal_state: List[int],
-        key: bytes = KEY,
 ) -> bytes:
     # I believe there is a rare failure case here that this doesn't handle
 
@@ -64,16 +63,16 @@ def padding_oracle_attack(
         trial = pad + [i] + augmented
         assert len(trial) % 16 == 0
 
-        a = check_token(bytes(block), bytes(trial), key=key)
+        a = check_token(bytes(block), bytes(trial))
 
         if a:
             internal_char = i ^ target
-            return padding_oracle_attack(block, iv, [internal_char] + internal_state, key)
+            return padding_oracle_attack_for_block(block, iv, [internal_char] + internal_state)
 
     assert 0, "not supposed to be here"  # pragma nocover
 
 
-def main():
+def padding_oracle_attack():
     ct, iv = get_cookie()
 
     blocks = get_all_blocks(ct)
@@ -82,13 +81,10 @@ def main():
 
     full = []
     for block, iv in zip(blocks, ivs):
-        answer = padding_oracle_attack(list(block), list(iv), [])
+        answer = padding_oracle_attack_for_block(list(block), list(iv), [])
         full.append(answer)
 
     padded = b"".join(full)
     result = pkcs7_unpad(padded, 16)
     debug(result)
-
-
-if __name__ == '__main__':
-    main() # pragma nocover
+    return result

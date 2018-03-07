@@ -100,7 +100,8 @@ class TestSolutions(unittest.TestCase):
         c16.main()
 
     def test_s3c17(self):
-        c17.main()
+        result = c17.padding_oracle_attack()
+        self.assertEqual(result, c17.s)
 
     def test_s6c41(self):
         c41.main()
