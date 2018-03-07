@@ -3,12 +3,14 @@ import random
 from typing import List
 
 import s2c11
+import util
 from s1c2 import xor2
 from s2c10 import cbc_encrypt, cbc_decrypt
 from pkcs7_padding import pkcs7_padding_valid, pkcs7_padding, pkcs7_unpad
 from s2c13 import get_all_blocks
 
 KEY = s2c11.random_AES_key()
+debug = util.debug_print(False)
 
 strings = b"""
 MDAwMDAwTm93IHRoYXQgdGhlIHBhcnR5IGlzIGp1bXBpbmc=
@@ -68,7 +70,7 @@ def padding_oracle_attack(
             internal_char = i ^ target
             return padding_oracle_attack(block, iv, [internal_char] + internal_state, key)
 
-    assert 0, "not supposed to be here"
+    assert 0, "not supposed to be here"  # pragma nocover
 
 
 def main():
@@ -85,8 +87,8 @@ def main():
 
     padded = b"".join(full)
     result = pkcs7_unpad(padded, 16)
-    print(result)
+    debug(result)
 
 
 if __name__ == '__main__':
-    main()
+    main() # pragma nocover
