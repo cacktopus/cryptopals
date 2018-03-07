@@ -25,32 +25,41 @@ strings = [base64.b64decode(s) for s in strings]
 s = random.choice(strings)
 
 
-def get_cookie():
+def get_cookie(key: bytes = KEY):
     padded = pkcs7_padding(s, 16)
     iv = s2c11.random_bytes(16)
-    em = cbc_encrypt(KEY, padded, iv=iv)
+    em = cbc_encrypt(key, padded, iv=iv)
     return em, iv
 
 
-def check_token(ct: bytes, iv: bytes) -> bool:
-    padded = cbc_decrypt(KEY, ct, iv)
+def check_token(ct: bytes, iv: bytes, key: bytes = KEY) -> bool:
+    padded = cbc_decrypt(key, ct, iv)
     return pkcs7_padding_valid(padded, 16)
 
 
-def padding_oracle_attack(block: bytes, iv: bytes) -> bytes:
+def padding_oracle_attack(block: bytes, iv: bytes, key: bytes = KEY) -> bytes:
+    count = 0
+    print("=" * 100)
     for i in range(256):
         trial = bytes([0] * 15 + [i])
 
-        a = check_token(block, trial)
+        a = check_token(block, trial, key=key)
 
         if a:
             print(i, a)
+            count += 1
+    if count != 1:
+        1 / 0
 
 
 def main():
-    ct, iv = get_cookie()
-    blocks = get_all_blocks(ct)
-    padding_oracle_attack(blocks[0], iv)
+    while True:
+        key = s2c11.random_AES_key()
+
+        ct, iv = get_cookie(key)
+        blocks = get_all_blocks(ct)
+
+        padding_oracle_attack(blocks[0], iv, key=key)
 
 
 if __name__ == '__main__':
