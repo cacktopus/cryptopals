@@ -1,7 +1,9 @@
 import base64
 import random
+from typing import List
 
 import s2c11
+from s1c2 import xor2
 from s2c10 import cbc_encrypt, cbc_decrypt
 from pkcs7_padding import pkcs7_padding_valid, pkcs7_padding
 from s2c13 import get_all_blocks
@@ -37,29 +39,44 @@ def check_token(ct: bytes, iv: bytes, key: bytes = KEY) -> bool:
     return pkcs7_padding_valid(padded, 16)
 
 
-def padding_oracle_attack(block: bytes, iv: bytes, key: bytes = KEY) -> bytes:
-    count = 0
-    print("=" * 100)
-    for i in range(256):
-        trial = bytes([0] * 15 + [i])
+def padding_oracle_attack(
+        block: List[int],
+        iv: List[int],
+        internal_state: List[int],
+        key: bytes = KEY,
+) -> bytes:
+    # I believe there is a rare failure case this doesn't handle
 
-        a = check_token(block, trial, key=key)
+    if len(internal_state) == len(block):
+        return xor2(internal_state, iv)
+
+    pad_length = len(block) - len(internal_state) - 1
+    pad = [0] * pad_length
+
+    target = len(internal_state) + 1
+
+    augmented = [c ^ target for c in internal_state]
+
+    for i in range(256):
+
+        trial = pad + [i] + augmented
+        assert len(trial) % 16 == 0
+
+        a = check_token(bytes(block), bytes(trial), key=key)
 
         if a:
-            print(i, a)
-            count += 1
-    if count != 1:
-        1 / 0
+            internal_char = i ^ target
+            return padding_oracle_attack(block, iv, [internal_char] + internal_state, key)
+
+    assert 0, "not supposed to be here"
 
 
 def main():
-    while True:
-        key = s2c11.random_AES_key()
+    ct, iv = get_cookie()
+    blocks = get_all_blocks(ct)
 
-        ct, iv = get_cookie(key)
-        blocks = get_all_blocks(ct)
-
-        padding_oracle_attack(blocks[0], iv, key=key)
+    answer = padding_oracle_attack(list(blocks[0]), iv, [])
+    print(answer)
 
 
 if __name__ == '__main__':

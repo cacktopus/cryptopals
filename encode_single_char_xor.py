@@ -1,7 +1,7 @@
 import codecs
 import sys
 
-from c3 import single_char_xor
+from s1c3 import single_char_xor
 from functools import partial
 from util import Chain
 
