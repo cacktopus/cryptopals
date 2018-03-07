@@ -36,7 +36,7 @@ def main():
     test = b'L77na/nrFsKvynd6HzOoG7GHTLXsTVu9qvY/2syLXzhPweyyMTJULu/6/kXX0KSvoOLSFQ=='
     given_ct = base64.b64decode(test)
 
-    result = ctr_encrypt(b"YELLOW SUBMARINE", 0, given_ct)
+    result = ctr_decrypt(b"YELLOW SUBMARINE", 0, given_ct)
     assert result == b"Yo, VIP Let's kick it Ice, Ice, baby Ice, Ice, baby "
 
 
