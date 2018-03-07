@@ -57,6 +57,8 @@ class TestPadding(unittest.TestCase):
         self.assertTrue(pkcs7_padding_valid(b"a" * 15 + bytes([1]), 16))
         self.assertFalse(pkcs7_padding_valid(b"a" * 15 + bytes([2]), 16))
 
+        self.assertFalse(pkcs7_padding_valid(b"a" * 15 + b"\x00", 16))
+
 
 if __name__ == '__main__':
     unittest.main()

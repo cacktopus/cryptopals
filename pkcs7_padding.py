@@ -29,6 +29,10 @@ def pkcs7_unpad(data: bytes, length: int) -> bytes:
     last_block = data[n - length:n]
     assert len(last_block) == length
     last_char = last_block[-1]
+
+    if last_char == 0:
+        raise PaddingError
+
     if last_char <= length:
         target = bytes([last_char]) * last_char
         end = last_block[length - last_char:length]

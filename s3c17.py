@@ -37,28 +37,20 @@ def check_token(ct: bytes, iv: bytes) -> bool:
     return pkcs7_padding_valid(padded, 16)
 
 
+def padding_oracle_attack(block: bytes, iv: bytes) -> bytes:
+    for i in range(256):
+        trial = bytes([0] * 15 + [i])
+
+        a = check_token(block, trial)
+
+        if a:
+            print(i, a)
+
+
 def main():
     ct, iv = get_cookie()
-    print(ct)
-    print(iv)
-
-    print(check_token(ct, iv))
-
     blocks = get_all_blocks(ct)
-    n = len(blocks)
-    prefix = b"".join(blocks[:n - 1])
-
-    last = list(blocks[-1])
-
-    for i in range(256):
-        trial = prefix + bytes(last[:15] + [i])
-        assert len(trial) % 16 == 0
-
-        a = check_token(trial, iv)
-        b = trial == ct
-
-        if a or b:
-            print(i, a, b)
+    padding_oracle_attack(blocks[0], iv)
 
 
 if __name__ == '__main__':
