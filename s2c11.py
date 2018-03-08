@@ -1,3 +1,4 @@
+import struct
 from typing import Generator
 from collections import Counter
 
@@ -22,6 +23,11 @@ def random_bytes(n: int):
 
 def random_AES_key() -> bytes:
     return random_bytes(16)
+
+
+def random_nonce() -> int:
+    data = random_bytes(8)
+    return struct.unpack("Q", data)[0]
 
 
 def encryption_oracle(plaintext: bytes):
