@@ -49,7 +49,6 @@ def get_blocks(data, *block_numbers):
 
 def get_all_blocks(data: bytes) -> List[bytes]:
     result = []
-    assert len(data) % 16 == 0
     for i in range(0, len(data), 16):
         block = data[i:i + 16]
         result.append(block)

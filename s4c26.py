@@ -1,5 +1,6 @@
 import s2c11
 import util
+from s2c13 import get_all_blocks
 from s2c16 import userdata
 from s3c18 import ctr_encrypt, ctr_decrypt
 
@@ -15,8 +16,8 @@ def encrypted_userdata(s: bytes) -> bytes:
     return em
 
 
-def decrypt(em: bytes) -> bytes:
-    return ctr_decrypt(KEY, NONCE, em)
+def decrypt(em: bytes, count: int = 0) -> bytes:
+    return ctr_decrypt(KEY, NONCE, em, counter=count)
 
 
 def is_admin(em: bytes) -> bool:
@@ -25,10 +26,25 @@ def is_admin(em: bytes) -> bool:
 
 
 def main():
-    p = encrypted_userdata(b"admin?true")
-    print(p)
-    print(decrypt(p))
+    p = encrypted_userdata(b":admin?true:    ")
+
+    blocks = get_all_blocks(p)
+
+    buf = list(blocks[2])
+    buf[0] ^= 0b1
+    buf[6] ^= 0b10
+    buf[11] ^= 0b1
+
+    blocks[2] = bytes(buf)
+
+    p_ = b"".join(blocks)
+
+    debug(decrypt(p))
+    assert not is_admin(p)
+
+    debug(decrypt(p_))
+    assert is_admin(p_)
 
 
 if __name__ == '__main__':
-    main()
+    main()  # pragma nocover

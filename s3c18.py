@@ -6,9 +6,8 @@ from Crypto.Cipher import AES
 from s1c2 import xor2
 
 
-def ctr_encrypt(key: bytes, nonce: int, data: bytes) -> bytes:
+def ctr_encrypt(key: bytes, nonce: int, data: bytes, counter: int = 0) -> bytes:
     result = []
-    counter = 0
     encrypter = AES.new(key, mode=AES.MODE_ECB)
 
     while data:
@@ -28,8 +27,8 @@ def ctr_encrypt(key: bytes, nonce: int, data: bytes) -> bytes:
     return b"".join(result)
 
 
-def ctr_decrypt(key: bytes, nonce: int, data: bytes) -> bytes:
-    return ctr_encrypt(key, nonce, data)
+def ctr_decrypt(key: bytes, nonce: int, data: bytes, counter: int = 0) -> bytes:
+    return ctr_encrypt(key, nonce, data, counter)
 
 
 def main():
