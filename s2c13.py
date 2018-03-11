@@ -47,6 +47,16 @@ def get_blocks(data, *block_numbers):
     return b"".join(get_block(data, b) for b in blocks)
 
 
+def get_block_range(data, bgn, end):
+    """inclusive of bgn, exclusive of end"""
+    result = []
+    for i in range(bgn, end):
+        j = i * 16
+        block = data[j:j + 16]
+        result.append(block)
+    return result
+
+
 def get_all_blocks(data: bytes) -> List[bytes]:
     result = []
     for i in range(0, len(data), 16):
