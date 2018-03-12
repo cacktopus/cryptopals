@@ -15,7 +15,6 @@ def _decrpt(ct: bytes) -> bytes:
 
 
 def edit(ct: bytes, offset: int, newtext: bytes) -> bytes:
-    # generate the keystream
     bgn = offset
     splice_len = len(newtext)
     end = bgn + splice_len
@@ -28,7 +27,7 @@ def edit(ct: bytes, offset: int, newtext: bytes) -> bytes:
     section = b"".join(blocks)
     section_len = len(section)
     keystream = ctr_decrypt(KEY, NONCE, b"\x00" * section_len, bgn_block)
-    assert len(keystream) > splice_len
+    assert len(keystream) >= splice_len
 
     prefix_len = bgn - bgn_block * 16
     assert 0 <= prefix_len < 16
@@ -66,9 +65,11 @@ def main():
 
     ct = ctr_encrypt(KEY, NONCE, pt)
 
-    new_ct = edit(ct, 2 + 16, b"_" * 100)
+    keystream = edit(ct, 0, b"\x00" * len(ct))
 
-    print(_decrpt(new_ct))
+    recovered_pt = xor2(keystream, ct)
+
+    assert pt == recovered_pt
 
 
 def get_plaintext():
@@ -80,4 +81,4 @@ def get_plaintext():
 
 
 if __name__ == '__main__':
-    main()
+    main()  # pragma nocover
