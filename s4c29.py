@@ -1,5 +1,6 @@
 from typing import Tuple
 
+import sha1
 import util
 from s4c28 import keyed_mac
 
@@ -33,6 +34,16 @@ def main():
     assert keyed_mac(b"abc124", msg) != correct
     assert keyed_mac(key, b"green cup soup chefs") != correct
 
+    guessed_length = 6
+    message_byte_length = len(msg) + guessed_length
+
+    processed_byte_length = message_byte_length // 64
+
+    unprocessed_length = processed_byte_length % 64
+    glue_padding = sha1.pad_message(unprocessed_length, 0)
+
+    assert (processed_byte_length + len(glue_padding)) % 64 == 0
+
 
 if __name__ == '__main__':
-    main()
+    main()  # pragma nocover

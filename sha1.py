@@ -58,18 +58,17 @@ def _process_chunk(chunk, h0, h1, h2, h3, h4):
     return h0, h1, h2, h3, h4
 
 
-def pad_message(unprocessed, message_byte_length):
-    message = unprocessed
-    message_byte_length = message_byte_length + len(message)
+def pad_message(unprocessed_byte_length, processed_byte_length):
+    message_byte_length = processed_byte_length + unprocessed_byte_length
     # append the bit '1' to the message
-    message += b'\x80'
+    padding = b'\x80'
     # append 0 <= k < 512 bits '0', so that the resulting message length (in bytes)
     # is congruent to 56 (mod 64)
-    message += b'\x00' * ((56 - (message_byte_length + 1) % 64) % 64)
+    padding += b'\x00' * ((56 - (message_byte_length + 1) % 64) % 64)
     # append length of message (before pre-processing), in bits, as 64-bit big-endian integer
     message_bit_length = message_byte_length * 8
-    message += struct.pack(b'>Q', message_bit_length)
-    return message
+    padding += struct.pack(b'>Q', message_bit_length)
+    return padding
 
 
 class Sha1Hash(object):
@@ -129,7 +128,7 @@ class Sha1Hash(object):
     def _produce_digest(self):
         """Return finalized digest variables for the data processed so far."""
         # Pre-processing:
-        message = pad_message(self._unprocessed, self._message_byte_length)
+        message = self._unprocessed + pad_message(len(self._unprocessed), self._message_byte_length)
 
         # Process the final chunk
         # At this point, the length of the message is either 64 or 128 bytes.
