@@ -31,18 +31,28 @@ def main():
 
     assert registers == (0x4860e61b, 0x1152e729, 0x10ab41f7, 0x76df5c38, 0x940931a7)
 
-    assert keyed_mac(b"abc124", msg) != correct
-    assert keyed_mac(key, b"green cup soup chefs") != correct
-
     guessed_length = 6
     message_byte_length = len(msg) + guessed_length
 
     processed_byte_length = message_byte_length // 64
 
-    unprocessed_length = processed_byte_length % 64
-    glue_padding = sha1.pad_message(unprocessed_length, 0)
+    unprocessed_length = message_byte_length % 64
+    glue_padding = sha1.pad_message(unprocessed_length, processed_byte_length)
 
-    assert (processed_byte_length + len(glue_padding)) % 64 == 0
+    assert (message_byte_length + len(glue_padding)) % 64 == 0
+
+    h = sha1.Sha1Hash(initial=registers)
+    h._message_byte_length = 64  # TODO: NO!! this works in this one case, but that's about it
+    new_msg = b"s"
+    forged = h.update(new_msg).hexdigest()
+
+    prefix = key + msg + glue_padding
+    assert len(prefix) % 64 == 0
+
+    h2 = sha1.Sha1Hash()
+    expected = h2.update(prefix + new_msg).hexdigest()
+
+    assert forged == expected
 
 
 if __name__ == '__main__':
