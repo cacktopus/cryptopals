@@ -79,9 +79,9 @@ class Sha1Hash(object):
     digest_size = 20
     block_size = 64
 
-    def __init__(self):
+    def __init__(self, initial=None):
         # Initial digest variables
-        self._h = (
+        self._h = initial or (
             0x67452301,
             0xEFCDAB89,
             0x98BADCFE,

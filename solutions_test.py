@@ -14,6 +14,7 @@ import s3c18 as c18
 import s4c25 as c25
 import s4c26 as c26
 import s4c28 as c28
+import s4c29 as c29
 import s6c41 as c41
 import s6c42 as c42
 import util
@@ -118,6 +119,9 @@ class TestSolutions(unittest.TestCase):
 
     def test_s4c28(self):
         c28.main()
+
+    def test_s4c29(self):
+        c29.main()
 
     def test_s6c41(self):
         c41.main()
