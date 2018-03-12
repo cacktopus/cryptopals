@@ -1,15 +1,7 @@
-#!/usr/bin/env python
+# Originally copied from https://github.com/ajalt/python-sha1
 
-# Copied from https://github.com/ajalt/python-sha1
-
-from __future__ import print_function
 import struct
 import io
-
-try:
-    range = xrange
-except NameError:
-    pass
 
 
 def _left_rotate(n, b):
@@ -145,63 +137,3 @@ class Sha1Hash(object):
         if len(message) == 64:
             return h
         return _process_chunk(message[64:], *h)
-
-
-def sha1(data):
-    """SHA-1 Hashing Function
-
-    A custom SHA-1 hashing function implemented entirely in Python.
-
-    Arguments:
-        data: A bytes or BytesIO object containing the input message to hash.
-
-    Returns:
-        A hex SHA-1 digest of the input message.
-    """
-    return Sha1Hash().update(data).hexdigest()
-
-
-if __name__ == '__main__':
-    # Imports required for command line parsing. No need for these elsewhere
-    import argparse
-    import sys
-    import os
-
-    # Parse the incoming arguments
-    parser = argparse.ArgumentParser()
-    parser.add_argument('input', nargs='*',
-                        help='input file or message to hash')
-    args = parser.parse_args()
-
-    data = None
-    if len(args.input) == 0:
-        # No argument given, assume message comes from standard input
-        try:
-            # sys.stdin is opened in text mode, which can change line endings,
-            # leading to incorrect results. Detach fixes this issue, but it's
-            # new in Python 3.1
-            data = sys.stdin.detach()
-
-        except AttributeError:
-            # Linux ans OSX both use \n line endings, so only windows is a
-            # problem.
-            if sys.platform == "win32":
-                import msvcrt
-
-                msvcrt.setmode(sys.stdin.fileno(), os.O_BINARY)
-            data = sys.stdin
-
-        # Output to console
-        print('sha1-digest:', sha1(data))
-
-    else:
-        # Loop through arguments list
-        for argument in args.input:
-            if (os.path.isfile(argument)):
-                # An argument is given and it's a valid file. Read it
-                data = open(argument, 'rb')
-
-                # Show the final digest
-                print('sha1-digest:', sha1(data))
-            else:
-                print("Error, could not find " + argument + " file.")
