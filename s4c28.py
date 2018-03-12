@@ -18,11 +18,13 @@ def keyed_mac(key: bytes, msg: bytes) -> str:
 
 
 def main():
+    sha1.Sha1Hash().update(b"a"*(64*2-1)).hexdigest()
+
     key = b"abc123"
     msg = b"green cup soup chef"
 
     correct = keyed_mac(key, msg)
-    print(correct)
+    assert correct == "4860e61b1152e72910ab41f776df5c38940931a7"
 
     assert keyed_mac(b"abc124", msg) != correct
     assert keyed_mac(key, b"green cup sous chef") != correct
