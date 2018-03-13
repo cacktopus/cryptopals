@@ -24,16 +24,18 @@ def to_registers(hexdigest) -> Tuple:
     return tuple(reversed(result))
 
 
-def length_extension_attack(existing_message: bytes, existing_hash: str, guessed_length: int):
+def length_extension_attack(original_message: bytes, existing_hash: str, guessed_length: int):
+    extra = b";admin=true"
+    glue_padding = compute_glue_padding(original_message, guessed_length)
+    new_msg = original_message + glue_padding + extra
+
+    prefix_length = guessed_length + len(original_message) + len(glue_padding)
+    assert prefix_length % 64 == 0
+
     registers = to_registers(existing_hash)
     h = sha1.Sha1Hash(initial=registers)
-    h._message_byte_length = 128  # TODO: NO!! this works in this one case, but that's about it
-
-    extra = b";admin=true"
+    h._message_byte_length = prefix_length
     forged = h.update(extra).hexdigest()
-
-    glue_padding = compute_glue_padding(existing_message, guessed_length)
-    new_msg = existing_message + glue_padding + extra
 
     return forged, new_msg
 
