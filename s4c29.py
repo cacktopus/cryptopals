@@ -1,3 +1,4 @@
+import random
 from typing import Tuple
 
 import sha1
@@ -6,8 +7,12 @@ from s4c28 import keyed_mac
 
 debug = util.debug_print(False)
 
+with open("/usr/share/dict/words", "rb") as f:
+    KEY = random.choice(f.read().split())
+
 
 def to_registers(hexdigest) -> Tuple:
+    # TODO: needs tests
     n = int(hexdigest, 16)
 
     result = []
@@ -19,40 +24,49 @@ def to_registers(hexdigest) -> Tuple:
     return tuple(reversed(result))
 
 
-def main():
-    key = b"abc123"
-    msg = b"green cup soup chef"
+def length_extension_attack(existing_message: bytes, existing_hash: str, guessed_length: int):
+    registers = to_registers(existing_hash)
+    h = sha1.Sha1Hash(initial=registers)
+    h._message_byte_length = 128  # TODO: NO!! this works in this one case, but that's about it
 
-    correct = keyed_mac(key, msg)
-    assert correct == "4860e61b1152e72910ab41f776df5c38940931a7"
+    extra = b";admin=true"
+    forged = h.update(extra).hexdigest()
 
-    registers = to_registers(correct)
-    debug(list(map(hex, registers)))
+    glue_padding = compute_glue_padding(existing_message, guessed_length)
+    new_msg = existing_message + glue_padding + extra
 
-    assert registers == (0x4860e61b, 0x1152e729, 0x10ab41f7, 0x76df5c38, 0x940931a7)
+    return forged, new_msg
 
-    guessed_length = 6
+
+def compute_glue_padding(msg, guessed_length):
     message_byte_length = len(msg) + guessed_length
-
-    processed_byte_length = message_byte_length // 64
-
+    processed_byte_length = 64 * (message_byte_length // 64)
     unprocessed_length = message_byte_length % 64
     glue_padding = sha1.pad_message(unprocessed_length, processed_byte_length)
-
     assert (message_byte_length + len(glue_padding)) % 64 == 0
+    return glue_padding
 
-    h = sha1.Sha1Hash(initial=registers)
-    h._message_byte_length = 64  # TODO: NO!! this works in this one case, but that's about it
-    new_msg = b"s"
-    forged = h.update(new_msg).hexdigest()
 
-    prefix = key + msg + glue_padding
-    assert len(prefix) % 64 == 0
+def verify_keyed_mac(new_msg: bytes, mac: bytes):
+    result = keyed_mac(KEY, new_msg)
+    return result == mac
 
-    h2 = sha1.Sha1Hash()
-    expected = h2.update(prefix + new_msg).hexdigest()
 
-    assert forged == expected
+def main():
+    msg = b"comment1=cooking%20MCs;userdata=foo;comment2=%20like%20a%20pound%20of%20bacon"
+    msg_hash = keyed_mac(KEY, msg)
+
+    for i in range(100):
+        forged, new_msg = length_extension_attack(msg, msg_hash, i)
+        if verify_keyed_mac(new_msg, forged):
+            break
+    else:
+        assert 0, "couldn't produce length-extended hash"  # pragma nocover
+
+    assert b"comment1" in new_msg
+    assert b";admin=true" in new_msg
+
+    debug("Found valid hash with key length {}; key was '{}'".format(i, KEY))
 
 
 if __name__ == '__main__':
