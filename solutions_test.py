@@ -15,6 +15,7 @@ import s4c25 as c25
 import s4c26 as c26
 import s4c28 as c28
 import s4c29 as c29
+import s4c31 as c31
 import s6c41 as c41
 import s6c42 as c42
 import util
@@ -122,6 +123,38 @@ class TestSolutions(unittest.TestCase):
 
     def test_s4c29(self):
         c29.main()
+
+    def test_s4c31(self):
+        eq = self.assertEqual
+        eq(
+            c31.hmac_md5(b"", b""),
+            "74e6f7298a9c2d168935f58c001bad88",
+        )
+
+        eq(
+            c31.hmac_sha1(b"", b""),
+            "fbdb1d1b18aa6c08324b7d64b71fb76370690e1d",
+        )
+
+        eq(
+            c31.hmac_sha256(b"", b""),
+            "b613679a0814d9ec772f95d778c35fc5ff1697c493715653c6c712144292c5ad",
+        )
+
+        eq(
+            c31.hmac_md5(b"key", b"The quick brown fox jumps over the lazy dog"),
+            "80070713463e7749b90c2dc24911e275",
+        )
+
+        eq(
+            c31.hmac_sha1(b"key", b"The quick brown fox jumps over the lazy dog"),
+            "de7c9b85b8b78aa6bc8a7a36f70a90701c9db4d9",
+        )
+
+        eq(
+            c31.hmac_sha256(b"key", b"The quick brown fox jumps over the lazy dog"),
+            "f7bc83f430538424b13298e6aa6fb143ef4d59a14946175997479dbc2d1a3cd8",
+        )
 
     def test_s6c41(self):
         c41.main()
