@@ -1,4 +1,3 @@
-import random
 from typing import Tuple
 
 import sha1
@@ -7,8 +6,7 @@ from s4c28 import keyed_mac
 
 debug = util.debug_print(False)
 
-with open("/usr/share/dict/words", "rb") as f:
-    KEY = random.choice(f.read().split())
+KEY = util.random_word()
 
 
 def to_registers(hexdigest) -> Tuple:

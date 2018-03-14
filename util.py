@@ -1,4 +1,5 @@
 import math
+import random
 
 from Crypto.PublicKey import RSA
 
@@ -53,3 +54,8 @@ def get_keys(key_name: str):
 
 def debug_print(enabled):
     return print if enabled else lambda *args, **kwargs: None
+
+
+def random_word() -> bytes:
+    with open("/usr/share/dict/words", "rb") as f:
+        return random.choice(f.read().split())
