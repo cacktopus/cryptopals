@@ -7,11 +7,15 @@ from functools import partial
 import requests
 
 import util
-from s4c31 import hmac_sha1
+from s4c31 import hmac_md5
 
 KEY = util.random_word()
 
 debug = util.debug_print(True)
+
+CHARSET = "0123456789abcdef"
+ARTIFICIAL_DELAY = 0.050
+HASH_LEN = 32
 
 
 def insecure_compare(artificial_delay: float, s0: str, s1: str) -> bool:
@@ -69,10 +73,10 @@ class Server(http.server.BaseHTTPRequestHandler):
             assert 0, "Unknown path"
 
     def test(self, msg: bytes, mac: str):
-        target = hmac_sha1(KEY, msg)
+        target = hmac_md5(KEY, msg)
         print(target, mac)
 
-        ok = insecure_compare(0.050, mac, target)
+        ok = insecure_compare(ARTIFICIAL_DELAY, mac, target)
 
         return b"yes" if ok else b"no"
 
@@ -84,27 +88,56 @@ def serve(s):
     print("stopping")
 
 
-def time_request(base, i):
-    t0 = time.time()
-    requests.get(
+def do_trial(base, prefix, trial):
+    signature = prefix + trial
+    signature += "0" * (HASH_LEN - len(signature))
+    assert len(signature) == HASH_LEN
+    resp = requests.get(
         url=base + "/test",
         params={
             "file": "foo",
-            "signature": i + "0" * 39
+            "signature": signature
         }
     )
+    return resp.text
+
+
+def time_request(base, prefix: str, trial: str):
+    t0 = time.time()
+    do_trial(base, prefix, trial)
     t = time.time() - t0
-    return t, i
+    return t, trial
+
+
+def get_last_char(base: str, prefix: str):
+    assert len(prefix) == HASH_LEN - 1
+    for trial in CHARSET:
+        resp = do_trial(base, prefix, trial)
+        if resp.strip().lower() == "yes":
+            return trial
+    raise RuntimeError("Could not derive last char")
 
 
 def derive_mac(base):
-    f = partial(time_request, base)
+    prefix = ""
 
-    options = list(map(f, "0123456789abcdef"))
+    while len(prefix) < HASH_LEN - 1:
+        f = partial(time_request, base, prefix)
 
-    print("\n".join(str(a) for a in sorted(options)))
-    print("")
-    print(max(options))
+        options = list(map(f, CHARSET))
+
+        print("\n".join(str(a) for a in sorted(options)))
+        print("")
+        selected = max(options)
+        score, ch = selected
+
+        prefix += ch
+
+    assert len(prefix) == HASH_LEN - 1
+
+    prefix += get_last_char(base, prefix)
+
+    return prefix
 
 
 def main():
@@ -124,7 +157,13 @@ def main():
 
     base = "http://{}:{}".format(*s.server_address)
 
-    derive_mac(base)
+    signature = derive_mac(base)
+    assert signature == hmac_md5(KEY, b"foo")
+
+    # target = hmac_md5(KEY, b"foo")
+    # prefix = target[:HASH_LEN - 1]
+    # print(prefix)
+    # print(get_last_char(base, prefix))
 
     requests.get(base + "/stop")
     print("done")
