@@ -1,6 +1,9 @@
 import http.server
+import threading
 import time
 import urllib.parse
+
+import requests
 
 import util
 from s4c31 import hmac_sha1
@@ -29,8 +32,12 @@ def insecure_compare(artificial_delay: float, s0: str, s1: str) -> bool:
     return True
 
 
+stop = False
+
+
 class Server(http.server.BaseHTTPRequestHandler):
     def do_GET(self):
+        global stop
         self.send_response(200)
         self.send_header('Content-type', 'text/plain')
         self.end_headers()
@@ -40,16 +47,25 @@ class Server(http.server.BaseHTTPRequestHandler):
         parts = urllib.parse.urlparse(path)
         print(parts)
 
-        query = urllib.parse.parse_qs(parts.query)
-        print(query)
+        if parts.path == "/stop":
+            print("stop")
+            stop = True
 
-        contents = query['file'][0]
-        signature = query['signature'][0]
+        elif parts.path == "/test":
 
-        print(contents, signature)
+            query = urllib.parse.parse_qs(parts.query)
+            print(query)
 
-        ok = self.test(contents.encode(), signature)
-        self.wfile.write(ok + b"\n")
+            contents = query['file'][0]
+            signature = query['signature'][0]
+
+            print(contents, signature)
+
+            ok = self.test(contents.encode(), signature)
+            self.wfile.write(ok + b"\n")
+
+        else:
+            assert 0, "Unknown path"
 
     def test(self, msg: bytes, mac: bytes):
         target = hmac_sha1(KEY, msg)
@@ -58,15 +74,26 @@ class Server(http.server.BaseHTTPRequestHandler):
 
 
 def serve():
+    global s
     addr = ('127.0.0.1', 8000)
     print("Listening on", addr)
     s = http.server.HTTPServer(addr, Server)
-    s.serve_forever()
+    while not stop:
+        print("stop?", stop)
+        s.handle_request()
+    print("stopping")
 
 
 def main():
-    # serve()
-    print(insecure_compare(0.50, "abcd", "abcd"))
+    t = threading.Thread(
+        target=serve,
+        daemon=False,
+    )
+
+    t.start()
+    time.sleep(1)
+    requests.get("http://localhost:8000/stop")
+    print("done")
 
 
 if __name__ == '__main__':
