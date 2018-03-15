@@ -73,11 +73,7 @@ class Server(http.server.BaseHTTPRequestHandler):
         return b"yes" if mac == target else b"no"
 
 
-def serve():
-    global s
-    addr = ('127.0.0.1', 8000)
-    print("Listening on", addr)
-    s = http.server.HTTPServer(addr, Server)
+def serve(s):
     while not stop:
         print("stop?", stop)
         s.handle_request()
@@ -85,14 +81,27 @@ def serve():
 
 
 def main():
+    addr = ('127.0.0.1', 0)  # TODO: random port
+    s = http.server.HTTPServer(addr, Server)
+
+    print("using", s.server_address)
+
     t = threading.Thread(
         target=serve,
         daemon=False,
+        args=(s,)
     )
 
     t.start()
     time.sleep(1)
-    requests.get("http://localhost:8000/stop")
+
+    # requests.get(
+    #     url="http://localhost:8000"
+    # )
+
+    base = "http://{}:{}".format(*s.server_address)
+
+    requests.get("{}/stop".format(base))
     print("done")
 
 
