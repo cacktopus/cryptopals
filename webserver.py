@@ -7,9 +7,10 @@ from s4c31 import hmac_sha1
 
 KEY = util.random_word()
 
+debug = util.debug_print(True)
+
 
 def insecure_compare(artificial_delay: float, s0: str, s1: str) -> bool:
-    # TODO: needs tests
     if len(s1) > len(s0):
         s0, s1 = s1, s0  # make s0 the longer of the two
     l0, l1 = list(s0), list(s1)
@@ -21,9 +22,9 @@ def insecure_compare(artificial_delay: float, s0: str, s1: str) -> bool:
         ok = c0 == c1
         time.sleep(artificial_delay)
         if not ok:
-            print("")
+            debug("")
             return False
-        print(c0, end='', flush=True)
+        debug(c0, end='', flush=True)
 
     return True
 

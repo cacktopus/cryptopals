@@ -21,6 +21,7 @@ import s6c42 as c42
 import util
 from s2c10 import cbc_encrypt
 from pkcs7_padding import pkcs7_padding
+from webserver import insecure_compare
 
 
 class TestSolutions(unittest.TestCase):
@@ -155,6 +156,12 @@ class TestSolutions(unittest.TestCase):
             c31.hmac_sha256(b"key", b"The quick brown fox jumps over the lazy dog"),
             "f7bc83f430538424b13298e6aa6fb143ef4d59a14946175997479dbc2d1a3cd8",
         )
+
+        self.assertTrue(insecure_compare(0.0, "abcd", "abcd"))
+        self.assertFalse(insecure_compare(0.0, "abcd", "abce"))
+        self.assertFalse(insecure_compare(0.0, "aBcd", "abcd"))
+        self.assertFalse(insecure_compare(0.0, "abc", "abcd"))
+        self.assertFalse(insecure_compare(0.0, "abcd", "abc"))
 
     def test_s6c41(self):
         c41.main()
