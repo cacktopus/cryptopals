@@ -5,7 +5,6 @@ import pkcs15
 import rsa
 import s1c1 as c1
 import s1c2 as c2
-import s2c12 as c12
 import s2c13 as c13
 import s2c15 as c15
 import s2c16 as c16
@@ -40,11 +39,6 @@ class TestSolutions(unittest.TestCase):
         r = c2.xor2(i0, i1)
 
         assert codecs.encode(r, "hex") == c2.expected
-
-    def test_s2c12(self):
-        self.skipTest("slow")
-        found = c12.main()
-        self.assertEqual(found, c12.UNKNOWN)
 
     def test_s2c13(self):
         res = c13.parse_kv('foo=bar&baz=qux&zap=zazzle')

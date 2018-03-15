@@ -33,7 +33,7 @@ def find_length(f):
         if prev:
             if sz != prev:
                 block_size = sz - prev
-                msg_length = prev - i + 1
+                msg_length = prev - i
                 return block_size, msg_length
         prev = sz
     else:
@@ -47,6 +47,7 @@ def main():
     found = b""
 
     block_size, unknown_length = find_length(f)
+    assert unknown_length == len(UNKNOWN)
 
     block = -1
     while len(found) < unknown_length:
