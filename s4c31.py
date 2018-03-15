@@ -63,7 +63,7 @@ def derive_mac(base):
     return prefix
 
 
-def main():
+def start_server():
     addr = ('127.0.0.1', 0)  # TODO: random port
     s = http.server.HTTPServer(addr, webserver.Server)
 
@@ -79,6 +79,12 @@ def main():
     time.sleep(0.250)
 
     base = "http://{}:{}".format(*s.server_address)
+
+    return s, base
+
+
+def main():
+    s, base = start_server()
 
     signature = derive_mac(base)
     assert signature == hmac_md5(webserver.KEY, b"foo")
