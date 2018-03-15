@@ -7,7 +7,7 @@ from functools import partial
 import requests
 
 import util
-from s4c31 import hmac_md5
+from hmac import hmac_md5
 
 KEY = util.random_word()
 
