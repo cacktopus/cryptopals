@@ -2,6 +2,7 @@ import http.server
 import threading
 import time
 import urllib.parse
+from functools import partial
 
 import requests
 
@@ -67,10 +68,13 @@ class Server(http.server.BaseHTTPRequestHandler):
         else:
             assert 0, "Unknown path"
 
-    def test(self, msg: bytes, mac: bytes):
+    def test(self, msg: bytes, mac: str):
         target = hmac_sha1(KEY, msg)
         print(target, mac)
-        return b"yes" if mac == target else b"no"
+
+        ok = insecure_compare(0.050, mac, target)
+
+        return b"yes" if ok else b"no"
 
 
 def serve(s):
@@ -78,6 +82,29 @@ def serve(s):
         print("stop?", stop)
         s.handle_request()
     print("stopping")
+
+
+def time_request(base, i):
+    t0 = time.time()
+    requests.get(
+        url=base + "/test",
+        params={
+            "file": "foo",
+            "signature": i + "0" * 39
+        }
+    )
+    t = time.time() - t0
+    return t, i
+
+
+def derive_mac(base):
+    f = partial(time_request, base)
+
+    options = list(map(f, "0123456789abcdef"))
+
+    print("\n".join(str(a) for a in sorted(options)))
+    print("")
+    print(max(options))
 
 
 def main():
@@ -93,15 +120,13 @@ def main():
     )
 
     t.start()
-    time.sleep(1)
-
-    # requests.get(
-    #     url="http://localhost:8000"
-    # )
+    time.sleep(0.250)
 
     base = "http://{}:{}".format(*s.server_address)
 
-    requests.get("{}/stop".format(base))
+    derive_mac(base)
+
+    requests.get(base + "/stop")
     print("done")
 
 
