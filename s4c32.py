@@ -3,9 +3,9 @@ import requests
 import webserver
 from s4c31 import derive_mac
 
-HASH_LEN = 16
-DELAY = 0.0025
-ITERATIONS = 40
+HASH_LEN = 20
+DELAY = 0.002
+ITERATIONS = 50
 
 
 def prove_low_delay_raises():
