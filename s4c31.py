@@ -79,7 +79,7 @@ def main():
 
     try:
         signature = derive_mac(base, hash_len)
-        # assert signature == hmac_func(webserver.KEY, b"foo")
+        assert signature == webserver.hmac_func(hash_len, webserver.KEY, b"foo")
     finally:
         requests.get(base + "/stop")
         print("done")

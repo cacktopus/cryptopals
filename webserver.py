@@ -9,6 +9,10 @@ from hmac import hmac_md5
 KEY = util.random_word()
 
 
+def hmac_func(hash_len: int, key: bytes, msg: bytes):
+    return hmac_md5(key, msg)[:hash_len]
+
+
 def insecure_compare(artificial_delay: float, s0: str, s1: str) -> bool:
     if len(s1) > len(s0):
         s0, s1 = s1, s0  # make s0 the longer of the two
@@ -69,7 +73,7 @@ class Server(http.server.BaseHTTPRequestHandler):
 
     def hmac_func(self, key: bytes, msg: bytes):
         hash_len = self.get_state("hash_len")
-        return hmac_md5(key, msg)[:hash_len]
+        return hmac_func(hash_len, key, msg)
 
 
 def serve(s: http.server.HTTPServer):
