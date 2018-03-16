@@ -18,14 +18,18 @@ p_nist = int("".join(p_nist_text.split()), 16)
 g_nist = 2
 
 
-def dh_example(p: int, g: int):
+def dh_secret(p: int):
     bit_sz = math.log2(p)
     byte_sz = int(math.ceil(bit_sz / 8))
+    priv = util.random_int_from_n_bytes(byte_sz) % p
+    return priv
 
-    priv_a = util.random_int_from_n_bytes(byte_sz) % p
+
+def dh_example(p: int, g: int):
+    priv_a = dh_secret(p)
     pub_a = util.modexp(g, p, priv_a)
 
-    priv_b = util.random_int_from_n_bytes(byte_sz) % p
+    priv_b = dh_secret(p)
     pub_b = util.modexp(g, p, priv_b)
 
     secret_a = util.modexp(pub_b, p, priv_a)

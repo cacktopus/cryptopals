@@ -1,5 +1,6 @@
 import math
 import random
+import subprocess as sp
 
 from Crypto.PublicKey import RSA
 
@@ -69,3 +70,9 @@ def random_int_from_n_bytes(n: int):
 def random_bytes(n: int):
     with open("/dev/urandom", "rb") as f:
         return f.read(n)
+
+
+def gen_prime(bits: int) -> int:
+    cmd = "openssl prime -generate -bits {}".format(bits)
+    output = sp.check_output(cmd.split())
+    return int(output)

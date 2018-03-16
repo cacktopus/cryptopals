@@ -4,17 +4,10 @@
 # - modular multiplicative inverse
 # - primality testing
 import math
-import subprocess as sp
 
 from Crypto.PublicKey import RSA
 
-from util import modexp
-
-
-def gen_prime(bits: int) -> int:
-    cmd = "openssl prime -generate -bits {}".format(bits)
-    output = sp.check_output(cmd.split())
-    return int(output)
+from util import modexp, gen_prime
 
 
 def multiplicative_inverse(a, m):
