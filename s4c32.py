@@ -5,7 +5,7 @@ from s4c31 import derive_mac
 
 
 def main():
-    s, base = webserver.start_server(artificial_delay=0.005, hash_len=16)
+    s, base = webserver.start_server(artificial_delay=0.004, hash_len=32)
     hash_len = s.server_state['hash_len']
 
     try:
