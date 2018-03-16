@@ -8,8 +8,6 @@ from hmac import hmac_md5
 
 KEY = util.random_word()
 
-debug = util.debug_print(True)
-
 
 def insecure_compare(artificial_delay: float, s0: str, s1: str) -> bool:
     if len(s1) > len(s0):
@@ -23,9 +21,7 @@ def insecure_compare(artificial_delay: float, s0: str, s1: str) -> bool:
         ok = c0 == c1
         time.sleep(artificial_delay)
         if not ok:
-            debug("")
             return False
-        debug(c0, end='', flush=True)
 
     return True
 
@@ -57,8 +53,6 @@ class Server(http.server.BaseHTTPRequestHandler):
 
     def test(self, msg: bytes, mac: str):
         target = self.hmac_func(KEY, msg)
-        print(target, mac)
-
         ok = insecure_compare(self.get_state("artificial_delay"), mac, target)
 
         return b"yes" if ok else b"no"

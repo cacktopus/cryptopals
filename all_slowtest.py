@@ -14,7 +14,8 @@ class AllTests(unittest.TestCase):
         c31.main()
 
     def test_s4c32(self):
-        self.assertRaises(c31.NotDerivedError, c32.main)
+        self.assertRaises(c31.NotDerivedError, c32.prove_low_delay_raises)
+        c32.works_with_many_iterations()
 
 
 if __name__ == '__main__':

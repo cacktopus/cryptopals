@@ -1,4 +1,5 @@
 import time
+from collections import defaultdict
 from functools import partial
 
 import requests
@@ -30,7 +31,7 @@ def time_request(base, hash_len: int, prefix: str, trial: str):
     t0 = time.time()
     do_trial(base, hash_len, prefix, trial)
     t = time.time() - t0
-    return t, trial
+    return t
 
 
 def get_last_char(base: str, hash_len: int, prefix: str):
@@ -42,20 +43,28 @@ def get_last_char(base: str, hash_len: int, prefix: str):
     raise NotDerivedError("Could not derive last char")
 
 
-def derive_mac(base, hash_len: int):
+def derive_mac(base, hash_len: int, iterations=1):
     prefix = ""
 
     while len(prefix) < hash_len - 1:
         f = partial(time_request, base, hash_len, prefix)
 
-        options = list(map(f, CHARSET))
+        result = defaultdict(float)
+
+        for _ in range(iterations):
+            round = {a: f(a) for a in CHARSET}
+            for k, v in round.items():
+                result[k] += v
+
+        options = [(v, k) for k, v in result.items()]
 
         print("\n".join(str(a) for a in sorted(options)))
-        print("")
         selected = max(options)
         score, ch = selected
 
         prefix += ch
+        print(prefix)
+        print("")
 
     assert len(prefix) == hash_len - 1
 
