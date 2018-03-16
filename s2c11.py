@@ -6,6 +6,7 @@ import random
 
 from s2c10 import cbc_encrypt, ecb_encrypt
 from pkcs7_padding import pkcs7_padding
+from util import random_bytes
 
 
 def chunk(size: int, data: bytes) -> Generator[bytes, None, None]:
@@ -14,11 +15,6 @@ def chunk(size: int, data: bytes) -> Generator[bytes, None, None]:
         ch = data[:size]
         data = data[size:]
         yield ch
-
-
-def random_bytes(n: int):
-    with open("/dev/urandom", "rb") as f:
-        return f.read(n)
 
 
 def random_AES_key() -> bytes:

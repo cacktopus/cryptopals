@@ -59,3 +59,13 @@ def debug_print(enabled):
 def random_word() -> bytes:
     with open("/usr/share/dict/words", "rb") as f:
         return random.choice(f.read().split())
+
+
+def random_int_from_n_bytes(n: int):
+    data = random_bytes(n)
+    return int.from_bytes(data, "little")
+
+
+def random_bytes(n: int):
+    with open("/dev/urandom", "rb") as f:
+        return f.read(n)

@@ -31,7 +31,7 @@ s = random.choice(strings)
 
 def get_cookie():
     padded = pkcs7_padding(s, 16)
-    iv = s2c11.random_bytes(16)
+    iv = util.random_bytes(16)
     em = cbc_encrypt(KEY, padded, iv=iv)
     return em, iv
 

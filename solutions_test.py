@@ -15,6 +15,7 @@ import s4c25 as c25
 import s4c26 as c26
 import s4c28 as c28
 import s4c29 as c29
+import s4c33 as c33
 import s6c41 as c41
 import s6c42 as c42
 import util
@@ -156,6 +157,9 @@ class TestSolutions(unittest.TestCase):
         self.assertFalse(insecure_compare(0.0, "aBcd", "abcd"))
         self.assertFalse(insecure_compare(0.0, "abc", "abcd"))
         self.assertFalse(insecure_compare(0.0, "abcd", "abc"))
+
+    def test_s4c33(self):
+        c33.main()
 
     def test_s6c41(self):
         c41.main()
