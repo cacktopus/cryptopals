@@ -71,20 +71,20 @@ def main():
     a = gen_a("b")
     b = gen_b("a")
 
+    routing = {
+        "a": a,
+        "b": b,
+    }
+
     next(b)
-    target, *ret_a = next(a)
+    target, *msg = next(a)
 
-    done = set()
-    while len(done) < 2:
+    while True:
+        t = routing[target]
         try:
-            target, *ret_b = b.send(twiddle(ret_a))
+            target, *msg = t.send(twiddle(msg))
         except StopIteration:
-            done.add('a')
-
-        try:
-            target, *ret_a = a.send(twiddle(ret_b))
-        except StopIteration:
-            done.add('b')
+            break
 
 
 if __name__ == '__main__':
