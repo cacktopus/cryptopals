@@ -67,6 +67,13 @@ def random_int_from_n_bytes(n: int):
     return int.from_bytes(data, "little")
 
 
+def int_to_bytes(n: int) -> bytes:
+    bitlen = math.log2(n)
+    byte_len = int(math.ceil(bitlen / 8))
+
+    return n.to_bytes(byte_len, "little")
+
+
 def random_bytes(n: int):
     with open("/dev/urandom", "rb") as f:
         return f.read(n)

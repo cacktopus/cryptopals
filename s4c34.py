@@ -1,32 +1,69 @@
-from s4c33 import p_nist, dh_secret
-from util import modexp, gen_prime
+import hashlib
+
+from pkcs7_padding import pkcs7_padding, pkcs7_unpad
+from s2c10 import cbc_encrypt, cbc_decrypt
+from s4c33 import dh_secret
+from util import modexp, gen_prime, int_to_bytes, random_bytes
 
 
 def gen_a():
     print("a started")
     p = gen_prime(256)
     g = 37
-    a = dh_secret(p)
-    A = modexp(g, p, a)
+    private = dh_secret(p)
+    public = modexp(g, p, private)
 
-    B = yield p, g, A
-    print("gen_a got B", B)
+    other_public = yield p, g, public
+    print("gen_a got B", other_public)
 
-    s = modexp(B, p, a)
+    s = modexp(other_public, p, private)
     print("gen_a secret", s)
+
+    key = hashlib.sha1(int_to_bytes(s)).digest()[:16]
+    iv = random_bytes(16)
+
+    msg = b"abc"
+    padded = pkcs7_padding(msg, 16)
+
+    ct = cbc_encrypt(key, padded, iv)
+    reply_data, reply_iv = yield ct, iv
+
+    print("echo:", reply_data, reply_iv)
+    reply_padded = cbc_decrypt(key, reply_data, reply_iv)
+
+    reply_pt = pkcs7_unpad(reply_padded, 16)
+    assert reply_pt == msg
+
+    print("reply:", reply_pt)
+
     yield None
 
 
 def gen_b():
     print("b started")
-    p, g, A = yield None
-    b = dh_secret(p)
-    B = modexp(g, p, b)
+    p, g, other_public = yield None
+    private = dh_secret(p)
+    public = modexp(g, p, private)
 
-    print("b got", A)
-    s = modexp(A, p, b)
+    print("b got", other_public)
+    s = modexp(other_public, p, private)
+    key = hashlib.sha1(int_to_bytes(s)).digest()[:16]
+
     print("gen_b secret", s)
-    yield B
+    ct, iv = yield public
+    print("got msg", ct, iv)
+
+    padded = cbc_decrypt(key, ct, iv=iv)
+
+    pt = pkcs7_unpad(padded, 16)
+    print("got pt", pt)
+
+    new_iv = random_bytes(16)
+    new_padded = pkcs7_padding(pt, 16)
+    new_ct = cbc_encrypt(key, new_padded, new_iv)
+
+    yield new_ct, new_iv
+
     yield None
 
 
@@ -40,6 +77,7 @@ def main():
     ret_b = b.send(ret_a)
     ret_a = a.send(ret_b)
     ret_b = b.send(ret_a)
+    ret_a = a.send(ret_b)
 
 
 if __name__ == '__main__':
