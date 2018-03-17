@@ -51,7 +51,8 @@ def encrypt(who: bytes, key: bytes, msg: bytes) -> Tuple[bytes, bytes]:
 
 def a():
     print("a: started")
-    yield []
+    start = yield []
+    assert start is Start
     p = gen_prime(256)
     g = 37
     private = dh_secret(p)
@@ -180,10 +181,14 @@ def start(g: Callable):
     return gen
 
 
+class Start:
+    pass
+
+
 def run(actors, starting_actor):
     actors = {k: (start(gen), dst) for k, (gen, dst) in actors.items()}
 
-    target, args = starting_actor, []
+    target, args = starting_actor, Start
     while True:
         t, target = actors[target]
         assert isinstance(t, types.GeneratorType)
