@@ -1,4 +1,5 @@
 import hashlib
+import types
 
 from pkcs7_padding import pkcs7_padding, pkcs7_unpad
 from s2c10 import cbc_encrypt, cbc_decrypt
@@ -13,7 +14,7 @@ def gen_a(target: str):
     private = dh_secret(p)
     public = modexp(g, p, private)
 
-    other_public = yield target, p, g, public
+    other_public, *_ = yield target, [p, g, public]
     print("gen_a got B", other_public)
 
     s = modexp(other_public, p, private)
@@ -26,7 +27,7 @@ def gen_a(target: str):
     padded = pkcs7_padding(msg, 16)
 
     ct = cbc_encrypt(key, padded, iv)
-    reply_data, reply_iv = yield target, ct, iv
+    reply_data, reply_iv = yield target, [ct, iv]
 
     print("echo:", reply_data, reply_iv)
     reply_padded = cbc_decrypt(key, reply_data, reply_iv)
@@ -39,7 +40,7 @@ def gen_a(target: str):
 
 def gen_b(target: str):
     print("b started")
-    p, g, other_public = yield target, None
+    p, g, other_public = yield target, [None]
     private = dh_secret(p)
     public = modexp(g, p, private)
 
@@ -48,7 +49,7 @@ def gen_b(target: str):
     key = hashlib.sha1(int_to_bytes(s)).digest()[:16]
 
     print("gen_b secret", s)
-    ct, iv = yield target, public
+    ct, iv = yield target, [public]
     print("got msg", ct, iv)
 
     padded = cbc_decrypt(key, ct, iv=iv)
@@ -60,29 +61,37 @@ def gen_b(target: str):
     new_padded = pkcs7_padding(pt, 16)
     new_ct = cbc_encrypt(key, new_padded, new_iv)
 
-    yield target, new_ct, new_iv
+    yield target, [new_ct, new_iv]
 
 
-def twiddle(args):
-    return args[0] if len(args) == 1 else args
+def mitm(target: str):
+    args = []
+    while True:
+        args = yield target, args
+        print("saw", args)
 
 
 def main():
-    a = gen_a("b")
-    b = gen_b("a")
+    a = gen_a("m0")
+    b = gen_b("m1")
+    m0 = mitm("b")
+    m1 = mitm("a")
 
-    routing = {
-        "a": a,
-        "b": b,
-    }
+    # TODO: try to get rid of the special case for starting generators
+
+    next(m0)
+    next(m1)
 
     next(b)
-    target, *msg = next(a)
+    target, args = next(a)
+    assert isinstance(args, list)
 
     while True:
-        t = routing[target]
+        t = locals()[target]
+        assert isinstance(t, types.GeneratorType)
         try:
-            target, *msg = t.send(twiddle(msg))
+            target, args = t.send(args)
+            assert isinstance(args, list)
         except StopIteration:
             break
 
