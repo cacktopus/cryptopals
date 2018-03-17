@@ -68,6 +68,8 @@ def random_int_from_n_bytes(n: int):
 
 
 def int_to_bytes(n: int) -> bytes:
+    if n == 0:
+        return b"\x00"
     bitlen = math.log2(n)
     byte_len = int(math.ceil(bitlen / 8))
 

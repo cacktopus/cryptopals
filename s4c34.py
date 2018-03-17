@@ -66,20 +66,24 @@ def b():
     yield [new_ct, new_iv]
 
 
-def mitm_ba():
-    pub_b, *_ = yield []
-    print("ba: ", pub_b)
-    ct, iv = yield [pub_b]
-    print("ba: ", ct, iv)
-    yield [ct, iv]
+class PInjector:
+    def __init__(self):
+        self.p = None
 
+    def mitm_ba(self):
+        pub_b, *_ = yield []
+        print("ba: ", pub_b)
+        ct, iv = yield [self.p]
+        print("ba: ", ct, iv)
+        yield [ct, iv]
 
-def mitm_ab():
-    p, g, pub_a = yield []
-    print("ab:", p, g, pub_a)
-    ct, iv = yield [p, g, pub_a]
-    print("ab:", ct, iv)
-    yield [ct, iv]
+    def mitm_ab(self):
+        p, g, pub_a = yield []
+        self.p = p
+        print("ab:", p, g, pub_a)
+        ct, iv = yield [p, g, self.p]
+        print("ab:", ct, iv)
+        yield [ct, iv]
 
 
 def start(g: Callable):
@@ -103,11 +107,13 @@ def run(actors, starting_actor):
 
 
 def main():
+    pi = PInjector()
+
     actors = {
         "a": (a, "m0"),
         "b": (b, "m1"),
-        "m0": (mitm_ab, "b"),
-        "m1": (mitm_ba, "a"),
+        "m0": (pi.mitm_ab, "b"),
+        "m1": (pi.mitm_ba, "a"),
 
     }
 
