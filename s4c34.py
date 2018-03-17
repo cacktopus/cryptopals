@@ -7,6 +7,8 @@ from s2c10 import cbc_encrypt, cbc_decrypt
 from s4c33 import dh_secret
 from util import modexp, gen_prime, int_to_bytes, random_bytes
 
+MSG = b"abc"
+
 
 def derive_key(secret: int):
     return hashlib.sha1(int_to_bytes(secret)).digest()[:16]
@@ -38,12 +40,11 @@ def a():
 
     key = derive_key(secret)
 
-    msg = b"abc"
-    ct, iv = encrypt(key, msg)
+    ct, iv = encrypt(key, MSG)
     reply_data, reply_iv = yield [ct, iv]
 
     reply_pt = decrypt(key, reply_iv, reply_data)
-    assert reply_pt == msg
+    assert reply_pt == MSG + b" echo"
 
     print("a: reply", reply_pt)
 
@@ -62,7 +63,7 @@ def b():
     pt = decrypt(key, iv, ct)
     print("b: got pt", pt)
 
-    new_ct, new_iv = encrypt(key, pt)
+    new_ct, new_iv = encrypt(key, pt + b" echo")
     yield [new_ct, new_iv]
 
 
@@ -76,8 +77,12 @@ class PInjector:
         ct, iv = yield [self.p]
 
         key = derive_key(0)
+        pt = decrypt(key, iv, ct)
+        print(pt)
+        target = MSG
+        assert pt == target + b" echo"
 
-        print("ba: ", ct, iv)
+        print("ba: ", pt)
         yield [ct, iv]
 
     def mitm_ab(self):
@@ -85,7 +90,12 @@ class PInjector:
         self.p = p
         print("ab:", p, g, pub_a)
         ct, iv = yield [p, g, self.p]
-        print("ab:", ct, iv)
+
+        key = derive_key(0)
+        pt = decrypt(key, iv, ct)
+        assert pt == MSG
+
+        print("ab:", pt)
         yield [ct, iv]
 
 
@@ -124,4 +134,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()  # pragma nocoverr
+    main()  # pragma nocover
