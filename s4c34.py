@@ -99,6 +99,21 @@ class PInjector:
         yield [ct, iv]
 
 
+class BasicMITM:
+    def __init__(self):
+        pass
+
+    def mitm_ba(self):
+        pub_b, *_ = yield []
+        ct, iv = yield [pub_b]
+        yield [ct, iv]
+
+    def mitm_ab(self):
+        p, g, pub_a = yield []
+        ct, iv = yield [p, g, pub_a]
+        yield [ct, iv]
+
+
 def start(g: Callable):
     gen = g()
     next(gen)
@@ -120,17 +135,22 @@ def run(actors, starting_actor):
 
 
 def main():
-    pi = PInjector()
+    proxies = [
+        BasicMITM(),
+        PInjector(),
+    ]
 
-    actors = {
-        "a": (a, "m0"),
-        "b": (b, "m1"),
-        "m0": (pi.mitm_ab, "b"),
-        "m1": (pi.mitm_ba, "a"),
+    for p in proxies:
+        print(("Run " + p.__class__.__name__).center(80, "="))
 
-    }
+        actors = {
+            "a": (a, "m0"),
+            "b": (b, "m1"),
+            "m0": (p.mitm_ab, "b"),
+            "m1": (p.mitm_ba, "a"),
 
-    run(actors, "a")
+        }
+        run(actors, "a")
 
 
 if __name__ == '__main__':
