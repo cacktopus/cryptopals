@@ -1,4 +1,4 @@
-# My solutions to cryptopals challenges
+# My solutions to [cryptopals challenges](https://cryptopals.com/)
 
 This is very rough and I'd (almost) never write production code like this.
 
