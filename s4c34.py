@@ -66,11 +66,20 @@ def b():
     yield [new_ct, new_iv]
 
 
-def mitm():
-    args = []
-    while True:
-        args = yield args
-        print("saw", args)
+def mitm_ba():
+    pub_b, *_ = yield []
+    print("ba: ", pub_b)
+    ct, iv = yield [pub_b]
+    print("ba: ", ct, iv)
+    yield [ct, iv]
+
+
+def mitm_ab():
+    p, g, pub_a = yield []
+    print("ab:", p, g, pub_a)
+    ct, iv = yield [p, g, pub_a]
+    print("ab:", ct, iv)
+    yield [ct, iv]
 
 
 def start(g: Callable):
@@ -97,8 +106,8 @@ def main():
     actors = {
         "a": (a, "m0"),
         "b": (b, "m1"),
-        "m0": (mitm, "b"),
-        "m1": (mitm, "a"),
+        "m0": (mitm_ab, "b"),
+        "m1": (mitm_ba, "a"),
 
     }
 
