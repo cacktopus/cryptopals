@@ -1,5 +1,6 @@
 import hashlib
 import types
+from typing import Callable
 
 from pkcs7_padding import pkcs7_padding, pkcs7_unpad
 from s2c10 import cbc_encrypt, cbc_decrypt
@@ -7,8 +8,9 @@ from s4c33 import dh_secret
 from util import modexp, gen_prime, int_to_bytes, random_bytes
 
 
-def gen_a(target: str):
+def a(target: str):
     print("a started")
+    yield target, []
     p = gen_prime(256)
     g = 37
     private = dh_secret(p)
@@ -38,9 +40,9 @@ def gen_a(target: str):
     print("reply:", reply_pt)
 
 
-def gen_b(target: str):
+def b(target: str):
     print("b started")
-    p, g, other_public = yield target, [None]
+    p, g, other_public = yield target, []
     private = dh_secret(p)
     public = modexp(g, p, private)
 
@@ -71,29 +73,36 @@ def mitm(target: str):
         print("saw", args)
 
 
-def main():
-    a = gen_a("m0")
-    b = gen_b("m1")
-    m0 = mitm("b")
-    m1 = mitm("a")
+def start(g: Callable, destination: str):
+    gen = g(destination)
+    next(gen)
+    return gen
 
-    # TODO: try to get rid of the special case for starting generators
 
-    next(m0)
-    next(m1)
+def run(actors, starting_actor):
+    actors = {k: start(*v) for k, v in actors.items()}
 
-    next(b)
-    target, args = next(a)
-    assert isinstance(args, list)
-
+    target, args = starting_actor, []
     while True:
-        t = locals()[target]
+        t = actors[target]
         assert isinstance(t, types.GeneratorType)
         try:
             target, args = t.send(args)
             assert isinstance(args, list)
         except StopIteration:
             break
+
+
+def main():
+    actors = {
+        "a": (a, "m0"),
+        "b": (b, "m1"),
+        "m0": (mitm, "b"),
+        "m1": (mitm, "a"),
+
+    }
+
+    run(actors, "a")
 
 
 if __name__ == '__main__':
