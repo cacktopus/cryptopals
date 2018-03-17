@@ -76,6 +76,10 @@ def int_to_bytes(n: int) -> bytes:
     return n.to_bytes(byte_len, "little")
 
 
+def bytes_to_int(data: bytes) -> int:
+    return int.from_bytes(data, "little")
+
+
 def random_bytes(n: int):
     with open("/dev/urandom", "rb") as f:
         return f.read(n)
