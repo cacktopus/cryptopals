@@ -36,8 +36,6 @@ def gen_a():
 
     print("reply:", reply_pt)
 
-    yield None
-
 
 def gen_b():
     print("b started")
@@ -64,8 +62,6 @@ def gen_b():
 
     yield new_ct, new_iv
 
-    yield None
-
 
 def main():
     a = gen_a()
@@ -74,10 +70,17 @@ def main():
     next(b)
     ret_a = next(a)
 
-    ret_b = b.send(ret_a)
-    ret_a = a.send(ret_b)
-    ret_b = b.send(ret_a)
-    ret_a = a.send(ret_b)
+    done = set()
+    while len(done) < 2:
+        try:
+            ret_b = b.send(ret_a)
+        except StopIteration:
+            done.add('a')
+
+        try:
+            ret_a = a.send(ret_b)
+        except StopIteration:
+            done.add('b')
 
 
 if __name__ == '__main__':
