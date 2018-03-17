@@ -8,15 +8,15 @@ from s4c33 import dh_secret
 from util import modexp, gen_prime, int_to_bytes, random_bytes
 
 
-def a(target: str):
+def a():
     print("a started")
-    yield target, []
+    yield []
     p = gen_prime(256)
     g = 37
     private = dh_secret(p)
     public = modexp(g, p, private)
 
-    other_public, *_ = yield target, [p, g, public]
+    other_public, *_ = yield [p, g, public]
     print("gen_a got B", other_public)
 
     s = modexp(other_public, p, private)
@@ -29,7 +29,7 @@ def a(target: str):
     padded = pkcs7_padding(msg, 16)
 
     ct = cbc_encrypt(key, padded, iv)
-    reply_data, reply_iv = yield target, [ct, iv]
+    reply_data, reply_iv = yield [ct, iv]
 
     print("echo:", reply_data, reply_iv)
     reply_padded = cbc_decrypt(key, reply_data, reply_iv)
@@ -40,9 +40,9 @@ def a(target: str):
     print("reply:", reply_pt)
 
 
-def b(target: str):
+def b():
     print("b started")
-    p, g, other_public = yield target, []
+    p, g, other_public = yield []
     private = dh_secret(p)
     public = modexp(g, p, private)
 
@@ -51,7 +51,7 @@ def b(target: str):
     key = hashlib.sha1(int_to_bytes(s)).digest()[:16]
 
     print("gen_b secret", s)
-    ct, iv = yield target, [public]
+    ct, iv = yield [public]
     print("got msg", ct, iv)
 
     padded = cbc_decrypt(key, ct, iv=iv)
@@ -63,31 +63,31 @@ def b(target: str):
     new_padded = pkcs7_padding(pt, 16)
     new_ct = cbc_encrypt(key, new_padded, new_iv)
 
-    yield target, [new_ct, new_iv]
+    yield [new_ct, new_iv]
 
 
-def mitm(target: str):
+def mitm():
     args = []
     while True:
-        args = yield target, args
+        args = yield args
         print("saw", args)
 
 
-def start(g: Callable, destination: str):
-    gen = g(destination)
+def start(g: Callable):
+    gen = g()
     next(gen)
     return gen
 
 
 def run(actors, starting_actor):
-    actors = {k: start(*v) for k, v in actors.items()}
+    actors = {k: (start(gen), dst) for k, (gen, dst) in actors.items()}
 
     target, args = starting_actor, []
     while True:
-        t = actors[target]
+        t, target = actors[target]
         assert isinstance(t, types.GeneratorType)
         try:
-            target, args = t.send(args)
+            args = t.send(args)
             assert isinstance(args, list)
         except StopIteration:
             break
@@ -106,4 +106,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()  # pragma nocover
+    main()  # pragma nocoverr
