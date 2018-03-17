@@ -6,14 +6,14 @@ from s4c33 import dh_secret
 from util import modexp, gen_prime, int_to_bytes, random_bytes
 
 
-def gen_a():
+def gen_a(target: str):
     print("a started")
     p = gen_prime(256)
     g = 37
     private = dh_secret(p)
     public = modexp(g, p, private)
 
-    other_public = yield p, g, public
+    other_public = yield target, p, g, public
     print("gen_a got B", other_public)
 
     s = modexp(other_public, p, private)
@@ -26,7 +26,7 @@ def gen_a():
     padded = pkcs7_padding(msg, 16)
 
     ct = cbc_encrypt(key, padded, iv)
-    reply_data, reply_iv = yield ct, iv
+    reply_data, reply_iv = yield target, ct, iv
 
     print("echo:", reply_data, reply_iv)
     reply_padded = cbc_decrypt(key, reply_data, reply_iv)
@@ -37,9 +37,9 @@ def gen_a():
     print("reply:", reply_pt)
 
 
-def gen_b():
+def gen_b(target: str):
     print("b started")
-    p, g, other_public = yield None
+    p, g, other_public = yield target, None
     private = dh_secret(p)
     public = modexp(g, p, private)
 
@@ -48,7 +48,7 @@ def gen_b():
     key = hashlib.sha1(int_to_bytes(s)).digest()[:16]
 
     print("gen_b secret", s)
-    ct, iv = yield public
+    ct, iv = yield target, public
     print("got msg", ct, iv)
 
     padded = cbc_decrypt(key, ct, iv=iv)
@@ -60,25 +60,29 @@ def gen_b():
     new_padded = pkcs7_padding(pt, 16)
     new_ct = cbc_encrypt(key, new_padded, new_iv)
 
-    yield new_ct, new_iv
+    yield target, new_ct, new_iv
+
+
+def twiddle(args):
+    return args[0] if len(args) == 1 else args
 
 
 def main():
-    a = gen_a()
-    b = gen_b()
+    a = gen_a("b")
+    b = gen_b("a")
 
     next(b)
-    ret_a = next(a)
+    target, *ret_a = next(a)
 
     done = set()
     while len(done) < 2:
         try:
-            ret_b = b.send(ret_a)
+            target, *ret_b = b.send(twiddle(ret_a))
         except StopIteration:
             done.add('a')
 
         try:
-            ret_a = a.send(ret_b)
+            target, *ret_a = a.send(twiddle(ret_b))
         except StopIteration:
             done.add('b')
 
