@@ -2,7 +2,7 @@ language: python
 python:
   - "3.6"
 
-script: python -m unittest *_test.py *_slowtest.py
+script: invoke test --slow
 branches:
   only:
     - master
