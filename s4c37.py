@@ -1,36 +1,22 @@
 import binascii
 import hashlib
 
-from hmac import hmac_sha256
-from s4c36 import mod, P, G, K, hash_to_int, host
 import actors
-from s4c33 import dh_secret
-from util import int_to_bytes, bytes_to_int
+from hmac import hmac_sha256
+from s4c36 import host
+from util import int_to_bytes
 
 
 def user():
     start = yield []
     assert start is actors.Start
 
-    a = dh_secret(P)
-    A = mod(G, a)
+    A = 0
 
     print("user: sending email")
     salt, B = yield [b"joe@abc.com", A]
-    u = hash_to_int(int_to_bytes(A) + int_to_bytes(B))
 
-    print("user: A:", A)
-    print("user: B:", B)
-    print("user: salt:", bytes_to_int(salt))
-    print("user: u", u)
-
-    x = hash_to_int(salt + b"pass")
-    print("user: x:", x)
-
-    t1 = B - K * mod(G, x)
-    assert t1 > 0
-
-    S = mod(t1, a + u * x)
+    S = 0
 
     print("user: S:", S)
 
@@ -49,7 +35,6 @@ def main():
         "host": (host, "user"),
     }
 
-    actors.run(actor_list, "user")
     actors.run(actor_list, "user")
 
 
