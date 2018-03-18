@@ -11,7 +11,11 @@ This is very rough and I'd (almost) never write production code like this.
     - Euclid's theorem
   - Generate my own primes
 
+- SRP
+  - Read the paper to understand the rationale for each step
+  - Verify the math
+
 - General
-  - Split tests into fast/slow
+  - ~~Split tests into fast/slow~~
 
 [![Build Status](https://travis-ci.org/cacktopus/cryptopals.svg?branch=master)](https://travis-ci.org/cacktopus/cryptopals)
