@@ -2,13 +2,14 @@ import hashlib
 
 import binascii
 
+from hmac import hmac_sha256
 from s4c33 import p_nist, dh_secret
 from s4c34 import run, Start
 from util import random_bytes, modexp, bytes_to_int, int_to_bytes
 
 EMAIL = b"joe@abc.com"
 PASSWORD = b"pass"
-P = p_nist and 107670934010135287054261758880117521203403554085594247991095416943566194277953  # TODO
+P = p_nist
 G = 2
 K = 3
 
@@ -41,7 +42,7 @@ def host():
     print("host: u", u)
     print("host: x:", x)
 
-    yield [salt, B]
+    user_mac, *_ = yield [salt, B]
 
     t0 = A * mod(v, u)
     S = mod(t0, b)
@@ -50,6 +51,9 @@ def host():
 
     key = hashlib.sha256(int_to_bytes(S)).digest()
     print("host: key:", binascii.hexlify(key))
+
+    host_mac = hmac_sha256(key, salt)
+    yield ["OK" if user_mac == host_mac else "NO"]
 
 
 def user():
@@ -81,7 +85,10 @@ def user():
     key = hashlib.sha256(int_to_bytes(S)).digest()
     print("user: key:", binascii.hexlify(key))
 
-    yield []
+    response, *_ = yield [hmac_sha256(key, salt)]
+    print("server says password was", response)
+
+    assert response == "OK"
 
 
 def main():
@@ -94,4 +101,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    main()  # pragma nocover
