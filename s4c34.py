@@ -1,9 +1,9 @@
 import hashlib
-import types
-from typing import Callable, Tuple
+from typing import Tuple
 
 import binascii
 
+from actors import Start, run
 from pkcs7_padding import pkcs7_padding, pkcs7_unpad
 from s2c10 import cbc_encrypt, cbc_decrypt
 from s4c33 import dh_secret
@@ -173,30 +173,6 @@ class DoubleDH:
         pt = decrypt(b"ba'", self.key_b, iv, ct)
         new_ct, new_iv = encrypt(b"ba", self.key_a, pt)
         yield [new_ct, new_iv]
-
-
-def start(g: Callable):
-    gen = g()
-    next(gen)
-    return gen
-
-
-class Start:
-    pass
-
-
-def run(actors, starting_actor):
-    generators = {k: (start(gen), dst) for k, (gen, dst) in actors.items()}
-
-    target, args = starting_actor, Start
-    while True:
-        t, target = generators[target]
-        assert isinstance(t, types.GeneratorType)
-        try:
-            args = t.send(args)
-            assert isinstance(args, list)
-        except StopIteration:
-            break
 
 
 def main():

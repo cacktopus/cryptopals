@@ -1,10 +1,9 @@
+import binascii
 import hashlib
 
-import binascii
-
+from actors import Start, run
 from hmac import hmac_sha256
 from s4c33 import p_nist, dh_secret
-from s4c34 import run, Start
 from util import random_bytes, modexp, bytes_to_int, int_to_bytes
 
 USERS = {
