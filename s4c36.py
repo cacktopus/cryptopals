@@ -7,8 +7,10 @@ from s4c33 import p_nist, dh_secret
 from s4c34 import run, Start
 from util import random_bytes, modexp, bytes_to_int, int_to_bytes
 
-EMAIL = b"joe@abc.com"
-PASSWORD = b"pass"
+USERS = {
+    b"joe@abc.com": b"pass"
+}
+
 P = p_nist
 G = 2
 K = 3
@@ -24,15 +26,18 @@ def hash_to_int(data: bytes) -> int:
 
 
 def host():
+    email, A = yield []
+
+    password = USERS[email]
+
     salt = random_bytes(16)
-    x = hash_to_int(salt + PASSWORD)
+    x = hash_to_int(salt + password)
     print("s: x:", x)
     v = mod(G, x)
 
     b = dh_secret(P)
     B = K * v + mod(G, b)
 
-    email, A = yield []
     print("{} trying to log in".format(email.decode()))
     u = hash_to_int(int_to_bytes(A) + int_to_bytes(B))
 
@@ -64,7 +69,7 @@ def user():
     A = mod(G, a)
 
     print("user: sending email")
-    salt, B = yield [EMAIL, A]
+    salt, B = yield [b"joe@abc.com", A]
     u = hash_to_int(int_to_bytes(A) + int_to_bytes(B))
 
     print("user: A:", A)
@@ -72,7 +77,7 @@ def user():
     print("user: salt:", bytes_to_int(salt))
     print("user: u", u)
 
-    x = hash_to_int(salt + PASSWORD)
+    x = hash_to_int(salt + b"pass")
     print("user: x:", x)
 
     t1 = B - K * mod(G, x)
@@ -97,6 +102,7 @@ def main():
         "host": (host, "user"),
     }
 
+    run(actors, "user")
     run(actors, "user")
 
 

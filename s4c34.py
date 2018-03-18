@@ -186,11 +186,11 @@ class Start:
 
 
 def run(actors, starting_actor):
-    actors = {k: (start(gen), dst) for k, (gen, dst) in actors.items()}
+    generators = {k: (start(gen), dst) for k, (gen, dst) in actors.items()}
 
     target, args = starting_actor, Start
     while True:
-        t, target = actors[target]
+        t, target = generators[target]
         assert isinstance(t, types.GeneratorType)
         try:
             args = t.send(args)
