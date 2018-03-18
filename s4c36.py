@@ -102,7 +102,6 @@ def main():
     }
 
     run(actors, "user")
-    run(actors, "user")
 
 
 if __name__ == '__main__':
